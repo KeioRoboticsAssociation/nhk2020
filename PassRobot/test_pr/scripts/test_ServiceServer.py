@@ -12,4 +12,5 @@ if __name__ == "__main__":
     rospy.init_node("server")
     server = rospy.Service("service",Trigger,serviceServer)
     print("Service Server start!")
+    print("--------------------------")
     rospy.spin()
