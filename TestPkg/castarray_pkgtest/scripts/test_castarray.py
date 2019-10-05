@@ -8,7 +8,7 @@ from geometry_msgs.msg import Twist
 class MultiArrayConverter():
     def __init__(self):
         self.pub_cmdvel = rospy.Publisher("cmd_vel",Twist,queue_size=10)
-        self.sub_cmdvel = rospy.Subscriber("array",Float32MultiArray,self.to_cmdvel)
+        self.sub_cmdvel = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.to_cmdvel)
         ## euler角をSubscribeするインスタンスの生成
 
     def to_cmdvel(self,msg):

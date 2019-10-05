@@ -12,7 +12,7 @@ if __name__ == "__main__":
         array.layout.dim[0].label = "array"
         array.layout.dim[0].size = 2
         array.data=[2.0,3.0]
-        pub = rospy.Publisher("array",Float32MultiArray,queue_size=10)
+        pub = rospy.Publisher("Float32MultiArray",Float32MultiArray,queue_size=10)
         pub.publish(array)
         rate.sleep()
         
