@@ -12,15 +12,19 @@ class MultiArrayConverter():
         ## euler角をSubscribeするインスタンスの生成
 
     def to_cmdvel(self,msg):
+        print("=================================")
+        print("Float32MultiArray [%f , %f] " % (msg.data[0],msg.data[1]))
         m = Twist()
         m.linear.x = msg.data[0]
         m.angular.z = msg.data[1]
-        print("I receive multiarray")
+        print("---------------------------------")
+        print("linear.x : %f" % m.linear.x)
+        print("angular.z : %f" % m.angular.z)
         self.pub_cmdvel.publish(m)
         return 0
 
     ## オイラー角を配信するcallback関数
-    def to_euler():
+    def to_euler(self):
         return 0
 
 
