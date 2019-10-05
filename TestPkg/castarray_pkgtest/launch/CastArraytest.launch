@@ -2,4 +2,5 @@
 <launch>
     <node pkg="castarray_pkgtest" type="multiarray_pub.py" name="MultiArrayPublisher" />
     <node pkg="castarray_pkgtest" type="test_castarray.py" name="multiarrayConverter" output="screen"/>
+    <node pkg="castarray_pkgtest" type="receive_msg.py" name="cmd_vel_receiver" />
 </launch>
