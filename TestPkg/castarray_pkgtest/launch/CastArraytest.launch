@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="castarray_pkgtest" type="multiarray_pub.py" name="MultiArrayPublisher" />
+    <node pkg="castarray_pkgtest" type="test_castarray.py" name="multiarrayConverter" output="screen"/>
+</launch>
