@@ -33,10 +33,10 @@ char endmsg = '\n';
 
 void float_callback(const std_msgs::Float32MultiArray& serial_msg){
     int datasize = serial_msg.data.size();
-    char *floattochar
-    floattochar = new char[datasize*4+6];
+    char *floattochar;
+    floattochar = new char[datasize * 4 + 6];
     floattochar[0] = 'f';
-    memcpy(&floattochar[1],datasize,4);
+    memcpy(&floattochar[1],&datasize,4);
     for(int i=0;i<datasize;i++){
         memcpy(&floattochar[i*4+5],&serial_msg.data[i],4);
     }
@@ -51,10 +51,10 @@ void float_callback(const std_msgs::Float32MultiArray& serial_msg){
 
 void int_callback(const std_msgs::Int32MultiArray& serial_msg){
     int datasize = serial_msg.data.size();
-    char *inttochar
-    inttochar = new char[datasize*4+6];
+    char *inttochar;
+    inttochar = new char[datasize * 4 + 6];
     inttochar[0] = 'i';
-    memcpy(&inttochar[1],datasize,4);
+    memcpy(&inttochar[1],&datasize,4);
     for(int i=0;i<datasize;i++){
         memcpy(&inttochar[i*4+5],&serial_msg.data[i],4);
     }
@@ -69,11 +69,11 @@ void int_callback(const std_msgs::Int32MultiArray& serial_msg){
 
 void string_callback(const std_msgs::String& serial_msg){
     int datasize = serial_msg.data.size();
-    char *chartochar
-    chartochar = new char[datasize+6];
+    char *chartochar;
+    chartochar = new char[datasize + 6];
     chartochar[0] = 'c';
-    memcpy(&chartochar[1],datasize,4);
-        memcpy(&chartochar[5],&serial_msg.data[i],datasize);
+    memcpy(&chartochar[1],&datasize,4);
+        memcpy(&chartochar[5],&serial_msg.data[0],datasize);
     chartochar[datasize+6] = endmsg;
 
     int rec=write(fd1,chartochar,datasize+6);
@@ -81,7 +81,6 @@ void string_callback(const std_msgs::String& serial_msg){
         ROS_ERROR_ONCE("Serial Fail: cound not write");
     }
     delete [] chartochar;
-    }
 }
 
 
@@ -91,8 +90,8 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
 
     //Publisher
-    ros::Publisher serial_pub_f = n.advertise<std_msgs::Float32MultiArray.h>("Serial_pub_float", 1000);
-    ros::Publisher serial_pub_i = n.advertise<std_msgs::Int32MultiArray.h>("Serial_pub_int", 1000);
+    ros::Publisher serial_pub_f = n.advertise<std_msgs::Float32MultiArray>("Serial_pub_float", 1000);
+    ros::Publisher serial_pub_i = n.advertise<std_msgs::Int32MultiArray>("Serial_pub_int", 1000);
     ros::Publisher serial_pub_c = n.advertise<std_msgs::String>("Serial_pub_string", 1000);
 
     //Subscriber
