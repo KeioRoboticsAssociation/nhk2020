@@ -1,0 +1,45 @@
+
+
+.header {
+    background-color: #f7f2b4;
+    height: 45px; 
+    
+}
+
+.header-top {
+    float:left;
+    font-size: 22px;
+    margin: 8px 10px 10px 10px;
+}
+
+.header-list li{
+    list-style: none;
+    float: left;
+    margin: 13px 10px 10px 10px;
+}
+
+
+
+.main {
+    height:800px;
+    background-image: url(../img/raspimouse2.jpg);
+    background-size: cover;
+}
+
+
+h1 {
+    /*width: 1170px;*/
+    padding: 150px 200px 10px 200px;
+    margin: 0 auto;
+    color:aqua;
+    font-size: 120px;
+    font-family: serif;
+    opacity: 0.9;
+}
+
+
+.footer {
+    background-color:darkorchid;
+    height:200px;
+}
+

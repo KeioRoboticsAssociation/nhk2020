@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>RASPIMOUSE CONTROLLER</title>
+        <link rel="stylesheet" href="./css/stylesheet2.css">
+        <script src="https://kit.fontawesome.com/ebc046a4a1.js" crossorigin="anonymous"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>              
+    </head>
+    <body>
+    <div class="header">
+        <div class="header-top">Raspimouse Moniter</div>
+        <div class="header-list">    
+            
+        </div>
+    </div>
+
+    <div class="signup-modal-wrapper">
+    </div>
+    <div class="login-modal-wrapper" id="login-modal">
+        <div class="modal">
+            <div id="login-form">
+                <h2 class="sensor-title">Sensor values</h2>
+                <form action="#">
+                <!--<input class="form-control" type="text" placeholder="メールアドレス"> -->
+                <!--<input class="form-control" type="password" placeholder="パスワード"> -->
+                <table>
+                <tbody class="modal-table">
+                    <tr>
+                        <th class="sensor-modal">sensor-label</th><th class="value-title-modal">lightsensor-value</th>
+                    </tr>
+                    <tr>
+                        <td class="right-side-modal">right-side</td><td class="value-right-side-modal"></td>
+                    </tr>
+                    <tr>
+                        <td class="right-front-modal">right-front</td><td class="value-right-front-modal"></td>
+                    </tr>
+                    <tr>
+                        <td class="left-front-modal">left-front</td><td class="value-left-front-modal"></td>
+                    </tr>
+                    <tr>
+                        <td class="left-side-modal">left-size</td><td class="value-left-side-modal"></td>
+                    </tr>
+                    <tr>
+                        <td class="sum-all-modal">sum-all</td><td class="value-sum-all-modal"></td>
+                    </tr>
+                    <tr>
+                        <td class="sum-front-modal">sum-front</td><td class="value-sum-front-modal"></td>
+                    </tr>
+                </tbody>
+                </table>
+                <div id="submit-btn">戻る</div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+        <div class="main">
+            <ul>
+                <li>
+                    <div>Display</div>
+                    <object id="camstream" style="width: 300px;height: 240px"></object>
+                </li>
+
+                <li>
+                    <div>LightSensors value</div>
+                    <table>
+                        <tr>
+                            <th class="sensor">sensor-label</th><th class="value-title">value</th>
+                        </tr>
+                        <tr>
+                            <td class="right-side">right-side</td><td class="value-right-side"></td>
+                        </tr>
+                        <tr>
+                            <td class="right-front">right-front</td><td class="value-right-front"></td>
+                        </tr>
+                        <tr>
+                            <td class="left-front">left-front</td><td class="value-left-front"></td>
+                        </tr>
+                        <tr>
+                            <td class="left-side">left-size</td><td class="value-left-side"></td>
+                        </tr>
+                        <tr>
+                            <td class="sum-all">sum-all</td><td class="value-sum-all"></td>
+                        </tr>
+                        <tr>
+                            <td class="sum-front">sum-front</td><td class="value-sum-front"></td>
+                        </tr>
+                    </table>
+
+                    <a href="#" class="btn-top-radius" id="table-btn">表を拡大</a>
+                </li>
+                
+                <li>Controller</li>
+                
+                <a href="#" class="btn-gradient-3d-orange">MOTOR_ON</a>
+                <a href="#" class="btn-gradient-3d-orange-green">MOTOR_OFF</a>
+
+                <table class="controller">
+                    <tr>
+                        <td></td><td class='up-btn'><a href="#" class="circle_spread_btn" id = "front"><i class="fas fa-angle-double-up"></i></a></td><td></td>
+                    </tr>
+                    <tr>
+                        <td class="left-btn"><a href="#" class="circle_spread_btn" id="left"><i class="fas fa-undo-alt"></i></a></td><td class="center-btn"><a href="#" class="btn-circle-stitch">STOP</a></td><td class="right-btn"><a href="#" class="circle_spread_btn" id="right"><i class="fas fa-redo-alt"></i></a></td>
+                    </tr>
+                    <tr>
+                        <td></td><td class="down-btn"><a href="#" class="circle_spread_btn" id="down"><i class="fas fa-angle-double-down"></i></a></td><td></td>
+                    </tr>
+                </table>
+
+            </ul>
+        </div>
+
+        <div class="footer">
+            <ul>
+                <li>
+                    <a href="./index.html">top</a>
+                </li>
+                <li>
+                    <a href="https://github.com/Besshy8/raspi_ros" target="_blank">GitHub</a>
+                    
+                </li>
+            </ul>
+        </div>
+        <script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+        <script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+        <script src="js/main.js"></script>
+    </body>    
+</html>
