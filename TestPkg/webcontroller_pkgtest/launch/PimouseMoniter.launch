@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="webcontroller_pkgtest" type="webserver.py" name="webserver" args="8000" />
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+        <arg name="port" default="9000"/>    
+    </include>
+    <node pkg="raspi_ros" type="detected_face.py" name="face_detecter" />
+    <node pkg="raspi_ros" type="lightsensors.py" name="lightsensors" />
+    <node pkg="cv_camera" type="cv_camera_node" name="cv_camera" >
+        <param name="rate" value="10.0"/>
+        <param name="image_width" value="320"/>
+        <param name="image_height" value="240"/>
+    </node>
+
+    <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server">
+        <param name="port" value="10000"/>
+    </node>
+
+    <node pkg="raspi_ros" type="motors.py" name="motors" />
+</launch>
