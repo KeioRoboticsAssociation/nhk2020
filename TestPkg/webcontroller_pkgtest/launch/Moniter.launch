@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="webcontroller_pkgtest" type="webserver.py" name="webserver" args="8000" />
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+        <arg name="port" default="9000"/>    
+    </include>
+    <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server">
+        <param name="port" value="10000"/>
+    </node>
+
+</launch>
