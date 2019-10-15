@@ -4,18 +4,21 @@
 #include "mbedserial.h"
 
 /***********************init***********************/
+void _nullfunc() { ; };
 
-Mbedserial::Mbedserial(Serial& pc) : rospc(pc)
+Mbedserial::Mbedserial(Serial &pc) : rospc(pc)
 {
     msg_buf = new char[256];
     bufsize = 0;
-	endmsg = '\n';
-	floatarraysize = 0;
-	intarraysize = 0;
-	chararraysize = 0;
-
-    //rospc = pc;
-    rospc.attach(callback(this,&Mbedserial::rcv_callback), Serial::RxIrq);
+    endmsg = '\n';
+    floatarraysize = 0;
+    intarraysize = 0;
+    chararraysize = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        pfunccb[i] = _nullfunc;
+    }
+    rospc.attach(callback(this, &Mbedserial::rcv_callback), Serial::RxIrq);
 }
 
 /**********************receive**********************/
@@ -28,30 +31,38 @@ void Mbedserial::rcv_callback()
         switch (msg_buf[0])
         {
         case 'f':
-            memcpy(&floatarraysize, &msg_buf[1], 4);
-            if (bufsize == floatarraysize * 4 + 6)
+            floatarraysize = *(int *)(&msg_buf[1]);
+            //memcpy(&floatarraysize, &msg_buf[1], 4);
+            if (bufsize == floatarraysize * 4 + 5)
             {
                 for (int i = 0; i < floatarraysize; i++)
                 {
-                    memcpy(&getfloat[i], &msg_buf[i * 4 + 5], 4);
+                    getfloat[i] = *(float *)(&msg_buf[i * 4 + 5]);
+                    //memcpy(&getfloat[i], &msg_buf[i * 4 + 5], 4);
                 }
+                pfunccb[0]();
             }
             break;
         case 'i':
-            memcpy(&intarraysize, &msg_buf[1], 4);
-            if (bufsize == intarraysize * 4 + 6)
+            intarraysize = *(int *)(&msg_buf[1]);
+            //memcpy(&intarraysize, &msg_buf[1], 4);
+            if (bufsize == intarraysize * 4 + 5)
             {
                 for (int i = 0; i < intarraysize; i++)
                 {
-                    memcpy(&getint[i], &msg_buf[i * 4 + 5], 4);
+                    getint[i] = *(int *)(&msg_buf[i * 4 + 5]);
+                    //memcpy(&getint[i], &msg_buf[i * 4 + 5], 4);
                 }
+                pfunccb[1]();
             }
             break;
         case 'c':
-            memcpy(&chararraysize, &msg_buf[1], 4);
-            if (bufsize == chararraysize + 6)
+            chararraysize = *(int *)(&msg_buf[1]);
+            //memcpy(&chararraysize, &msg_buf[1], 4);
+            if (bufsize == chararraysize + 5)
             {
                 memcpy(&getchar[0], &msg_buf[5], chararraysize);
+                pfunccb[2]();
             }
             break;
         }
@@ -67,7 +78,9 @@ void Mbedserial::rcv_callback()
 
 /***********************send***********************/
 
-void Mbedserial::float_write(float *array, int arraysize)
+int pub_wait_time = 8; //ms
+
+void Mbedserial::float_write(float array[], int arraysize)
 {
     // send data type
     char msg_type = 'f';
@@ -75,7 +88,8 @@ void Mbedserial::float_write(float *array, int arraysize)
 
     // send array size
     char arraysize_c[4];
-    memcpy(arraysize_c, &arraysize, 4);
+    *(int *)arraysize_c = arraysize;
+    //memcpy(arraysize_c, &arraysize, 4);
     for (int i = 0; i < 4; i++)
     {
         rospc.putc(arraysize_c[i]);
@@ -85,7 +99,8 @@ void Mbedserial::float_write(float *array, int arraysize)
     char array_c[4];
     for (int i = 0; i < arraysize; i++)
     {
-        memcpy(array_c, &array[i], 4);
+        *(float *)array_c = array[i];
+        //memcpy(array_c, &array[i], 4);
         for (int j = 0; j < 4; j++)
         {
             rospc.putc(array_c[j]);
@@ -94,53 +109,7 @@ void Mbedserial::float_write(float *array, int arraysize)
 
     // send end message
     rospc.putc(endmsg);
-
-    /*
-	char itoc[4];
-	char ftoc[4];
-	char *serialchar;
-	serialchar = new char[4 * (finsize + 1)];
-	memcpy(&itoc, &finsize, 4);
-	//strcat_s(serialchar, sizeof(serialchar), itoc);
-
-	for (int i = 0; i < 4; i++) {
-		serialchar[i] = itoc[i];
-	}
-
-	for (int i = 0; i < finsize; i++) {
-		memcpy(&ftoc, &fin[i], 4);
-		
-		for (int j = 0; j < 4; j++) {
-			serialchar[4*(i+1)+j] = ftoc[j];
-		}
-		//strcat(serialchar, ftoc);
-	}
-
-	cout << "send : ";
-	for (int i = 0; i < 4 * (finsize + 1); i++) {
-	}
-
-    int ansint = 20;
-    float *ansflt;
-    memcpy(&ansint, serialchar, 4);
-    ansflt = new float[ansint];
-    for (int i = 0; i < ansint; i++)
-    {
-        memcpy(&ansflt[i], &serialchar[4 * (i + 1)], 4);
-    }
-
-    cout << "ansint : " << ansint << endl;
-    cout << "ansflt";
-    for (int i = 0; i < ansint; i++)
-    {
-        cout << " : " << ansflt[i];
-    }
-    cout << endl;
-
-    delete[] serialchar;
-
-    delete[] ansflt;
-    */
+    //wait_ms(pub_wait_time);
 }
 
 void Mbedserial::int_write(int *array, int arraysize)
@@ -151,7 +120,8 @@ void Mbedserial::int_write(int *array, int arraysize)
 
     // send array size
     char arraysize_c[4];
-    memcpy(arraysize_c, &arraysize, 4);
+    *(int *)arraysize_c = arraysize;
+    //memcpy(arraysize_c, &arraysize, 4);
     for (int i = 0; i < 4; i++)
     {
         rospc.putc(arraysize_c[i]);
@@ -161,7 +131,8 @@ void Mbedserial::int_write(int *array, int arraysize)
     char array_c[4];
     for (int i = 0; i < arraysize; i++)
     {
-        memcpy(array_c, &array[i], 4);
+        *(int *)array_c = array[i];
+        //memcpy(array_c, &array[i], 4);
         for (int j = 0; j < 4; j++)
         {
             rospc.putc(array_c[j]);
@@ -170,6 +141,7 @@ void Mbedserial::int_write(int *array, int arraysize)
 
     // send end message
     rospc.putc(endmsg);
+    //wait_ms(pub_wait_time);
 }
 
 void Mbedserial::char_write(char *array, int arraysize)
@@ -180,7 +152,8 @@ void Mbedserial::char_write(char *array, int arraysize)
 
     // send array size
     char arraysize_c[4];
-    memcpy(arraysize_c, &arraysize, 4);
+    *(int *)arraysize_c = arraysize;
+    //memcpy(arraysize_c, &arraysize, 4);
     for (int i = 0; i < 4; i++)
     {
         rospc.putc(arraysize_c[i]);
@@ -194,4 +167,5 @@ void Mbedserial::char_write(char *array, int arraysize)
 
     // send end message
     rospc.putc(endmsg);
+    //wait_ms(pub_wait_time);
 }

@@ -115,7 +115,7 @@ void string_callback(const std_msgs::String &serial_msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "serial_test_sync_node");
+    ros::init(argc, argv, "serial_test_node");
     ros::NodeHandle n;
 
     //Publisher
@@ -144,10 +144,7 @@ int main(int argc, char **argv)
         ros::shutdown();
     }
 
-    char buf[256] = {0};
-    int bufnum[2] = {0, 0};
-    int bufthreshold = 128;
-    char *buf_pub;
+    char buf_pub[256] = {0};
     int recv_data_size = 0;
     int arraysize = 0;
     int rec;
@@ -155,43 +152,17 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        int recv_data = read(fd1, &buf[bufnum[1]], 128);
+        int recv_data = read(fd1, &buf_pub[recv_data_size], sizeof(buf_pub));
 
-        if (recv_data > 0 && recv_data < 100)
+        if (recv_data > 0)
         {
-            int temp1 = bufnum[1] + recv_data - 128;
-            if (bufnum[1] >= 128)
+            recv_data_size += recv_data;
+            if (recv_data_size >= 256)
             {
-                for (int i = bufnum[1] - 128; i < temp1; i++)
-                {
-                    buf[i] = buf[128 + i];
-                }
+                recv_data_size = 0;
             }
-            else if (temp1 >= 0)
+            else if (buf_pub[recv_data_size - 1] == endmsg)
             {
-                for (int i = 0; i < temp1; i++)
-                {
-                    buf[i] = buf[128 + i];
-                }
-            }
-            bufnum[1] += recv_data;
-
-            bool endmsg_flag = false;
-            while (bufnum[0] + recv_data_size <= bufnum[1])
-            {
-                recv_data_size++;
-                if (buf[bufnum[0] + recv_data_size - 1] == endmsg)
-                {
-                    endmsg_flag = true;
-                    break;
-                }
-            }
-            
-
-            if (endmsg_flag)
-            {
-                buf_pub = &buf[bufnum[0]];
-
                 arraysize = *(int *)(&buf_pub[1]);
                 //memcpy(&arraysize, &(buf_pub[1]), 4);
 
@@ -245,13 +216,6 @@ int main(int argc, char **argv)
                     break;
                 default:
                     ROS_INFO("Not Float / Int / Char");
-                }
-
-                bufnum[0] += recv_data_size;
-                if (bufnum[0] >= 128)
-                {
-                    bufnum[0] %= 128;
-                    bufnum[1] %= 128;
                 }
                 recv_data_size = 0;
             }

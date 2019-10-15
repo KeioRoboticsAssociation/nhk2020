@@ -26,7 +26,7 @@ include_directories(
 )
 
 
-add_executable(serial_test_node src/serial_test.cpp)
+add_executable(serial_test_node src/serial_test_v1.cpp)
 add_dependencies(serial_test_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(serial_test_node ${catkin_LIBRARIES})
 
