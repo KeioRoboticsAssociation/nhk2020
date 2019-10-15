@@ -155,29 +155,14 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        int recv_data = read(fd1, &buf[bufnum[1]], 128);
+        int recv_data = read(fd1, &buf[bufnum[1]], bufthreshold);
 
-        if (recv_data > 0 && recv_data < 100)
+        if (recv_data > 0 && recv_data < 50)
         {
-            int temp1 = bufnum[1] + recv_data - 128;
-            if (bufnum[1] >= 128)
-            {
-                for (int i = bufnum[1] - 128; i < temp1; i++)
-                {
-                    buf[i] = buf[128 + i];
-                }
-            }
-            else if (temp1 >= 0)
-            {
-                for (int i = 0; i < temp1; i++)
-                {
-                    buf[i] = buf[128 + i];
-                }
-            }
             bufnum[1] += recv_data;
 
             bool endmsg_flag = false;
-            while (bufnum[0] + recv_data_size <= bufnum[1])
+            while (1)
             {
                 recv_data_size++;
                 if (buf[bufnum[0] + recv_data_size - 1] == endmsg)
@@ -185,8 +170,11 @@ int main(int argc, char **argv)
                     endmsg_flag = true;
                     break;
                 }
+                if (bufnum[0] + recv_data_size >= bufnum[1])
+                {
+                    break;
+                }
             }
-            
 
             if (endmsg_flag)
             {
@@ -248,10 +236,14 @@ int main(int argc, char **argv)
                 }
 
                 bufnum[0] += recv_data_size;
-                if (bufnum[0] >= 128)
+                if (bufnum[0] >= bufthreshold)
                 {
-                    bufnum[0] %= 128;
-                    bufnum[1] %= 128;
+                    bufnum[1] -= bufnum[0];
+                    for (int i = 0; i < bufnum[1]; i++)
+                    {
+                        buf[i] = buf[i + bufnum[0]];
+                    }
+                    bufnum[0] = 0;
                 }
                 recv_data_size = 0;
             }
