@@ -147,6 +147,7 @@ int main(int argc, char **argv)
     char buf[256] = {0};
     int bufnum[2] = {0, 0};
     int bufthreshold = 128;
+    bool endmsg_flag = false;
     char *buf_pub;
     int recv_data_size = 0;
     int arraysize = 0;
@@ -161,7 +162,6 @@ int main(int argc, char **argv)
         {
             bufnum[1] += recv_data;
 
-            bool endmsg_flag = false;
             while (1)
             {
                 recv_data_size++;
@@ -181,7 +181,6 @@ int main(int argc, char **argv)
                 buf_pub = &buf[bufnum[0]];
 
                 arraysize = *(int *)(&buf_pub[1]);
-                //memcpy(&arraysize, &(buf_pub[1]), 4);
 
                 switch (buf_pub[0])
                 {
@@ -193,7 +192,6 @@ int main(int argc, char **argv)
                         for (int i = 0; i < arraysize; i++)
                         {
                             pub_float.data[i] = *(float *)(&buf_pub[i * 4 + 5]);
-                            //memcpy(&pub_float.data[i], &buf_pub[i * 4 + 5], 4);
                         }
                         serial_pub_f.publish(pub_float);
                     }
@@ -210,7 +208,6 @@ int main(int argc, char **argv)
                         for (int i = 0; i < arraysize; i++)
                         {
                             pub_int.data[i] = *(int *)(&buf_pub[i * 4 + 5]);
-                            //memcpy(&pub_int.data[i], &buf_pub[i * 4 + 5], 4);
                         }
                         serial_pub_i.publish(pub_int);
                     }
@@ -236,6 +233,9 @@ int main(int argc, char **argv)
                 }
 
                 bufnum[0] += recv_data_size;
+                recv_data_size = 0;
+                endmsg_flag = false;
+
                 if (bufnum[0] >= bufthreshold)
                 {
                     bufnum[1] -= bufnum[0];
@@ -245,7 +245,6 @@ int main(int argc, char **argv)
                     }
                     bufnum[0] = 0;
                 }
-                recv_data_size = 0;
             }
         }
 

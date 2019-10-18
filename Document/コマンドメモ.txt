@@ -1,261 +1,261 @@
-�y�R�}���h�z
+【コマンド】
 
-�Ecd <�p�X��>
-����"chdir"
-�f�B���N�g���̕ύX�A�p�X���ȗ��ŃJ�����g�f�B���N�g���̃p�X���o��
-"\" �Ő擪�ɖ߂�
-".."�ň�O�̃f�B���N�g���Ɉړ�
-"*"�œr���̕������ȗ�
+・cd <パス名>
+又は"chdir"
+ディレクトリの変更、パス名省略でカレントディレクトリのパスを出力
+"\" で先頭に戻る
+".."で一つ前のディレクトリに移動
+"*"で途中の文字を省略
 
-�Edir <�p�X��>
-�w��p�X�̃f�B���N�g���ꗗ��\��
-�p�X���ȗ��ŃJ�����g�f�B���N�g���̏���\��
+・dir <パス名>
+指定パスのディレクトリ一覧を表示
+パス名省略でカレントディレクトリの情報を表示
 
-�Etree <�p�X��>
-�f�B���N�g�����c���[�`���ŕ\��
+・tree <パス名>
+ディレクトリをツリー形式で表示
 
-�Ecopy <�R�s�[���t�@�C����> <�R�s�[��t�@�C����>
-�p�X�ȗ��ŃJ�����g�f�B���N�g�����R�s�[�Ώ�
+・copy <コピー元ファイル名> <コピー先ファイル名>
+パス省略でカレントディレクトリがコピー対象
 
-�Ecopy nul <�t�@�C����>
-����"type nul > <�t�@�C����>"
-��̃t�@�C�����쐬����
+・copy nul <ファイル名>
+又は"type nul > <ファイル名>"
+空のファイルを作成する
 
-�Edel <�폜�t�@�C����>
-�t�@�C�����폜�A�p�X����w��ł���
+・del <削除ファイル名>
+ファイルを削除、パス先も指定できる
 
-�Emd <�f�B���N�g����>
-����"mkdir"
-�f�B���N�g���쐬�A�p�X����w��ł���
+・md <ディレクトリ名>
+又は"mkdir"
+ディレクトリ作成、パス先も指定できる
 
-�Erd <�f�B���N�g����>
-����"rmdir"
-�f�B���N�g�����폜�A�p�X����w��ł���
+・rd <ディレクトリ名>
+又は"rmdir"
+ディレクトリを削除、パス先も指定できる
 
-�Eren <�ύX�O�̖��O> <�ύX��̖��O>
-���O��ύX�A�p�X����w��ł���
+・ren <変更前の名前> <変更後の名前>
+名前を変更、パス先も指定できる
 
-�Ecls
-�R�}���h��ʂ��N���A
+・cls
+コマンド画面をクリア
 
-�Etype <�t�@�C����>
-�t�@�C���̓��e��\��
+・type <ファイル名>
+ファイルの内容を表示
 
-�Emore <�t�@�C����>
-�t�@�C���̓��e��1�s����1��ʂ��\��
+・more <ファイル名>
+ファイルの内容を1行又は1画面ずつ表示
 
-�Eipconfig
-IP�A�h���X���m�F
+・ipconfig
+IPアドレスを確認
 
-�Eexit
-�R�}���h�v�����v�g���I��
+・exit
+コマンドプロンプトを終了
 
-�EF7�L�[
-����܂łɓ��͂����R�}���h�ꗗ��\��
+・F7キー
+それまでに入力したコマンド一覧を表示
 
-�ECtrl+C
-�����𒆒f
+・Ctrl+C
+処理を中断
 
-�Eexplorer .
-�J�����g�f�B���N�g�����G�N�X�v���[���[�ŊJ��
+・explorer .
+カレントディレクトリをエクスプローラーで開く
 
-�E�V���{���b�N�����N�쐬
-mklink <�쐬�t�@�C����> <�����N��^�[�Q�b�g�̃t�@�C����>
-mklink /D <�쐬�t�H���_��> <�����N��^�[�Q�b�g�̃t�H���_��>
-�t�H���_�ւ̃V���{���b�N�����N���쐬
-�폜����Ƃ��͕��ʂ̃t�@�C����t�H���_�Ɠ���
+・シンボリックリンク作成
+mklink <作成ファイル名> <リンク先ターゲットのファイル名>
+mklink /D <作成フォルダ名> <リンク先ターゲットのフォルダ名>
+フォルダへのシンボリックリンクを作成
+削除するときは普通のファイルやフォルダと同じ
 
-�E�t�@�C������
-"robocopy /?"�ŏڍׂ��m�F
-robocopy "<�R�s�[��>" "<�R�s�[��>" <�I�v�V����>
+・ファイル同期
+"robocopy /?"で詳細を確認
+robocopy "<コピー元>" "<コピー先>" <オプション>
 
-�E�t�@�C���̍��������o
-fc (�I�v�V����) <�t�@�C��1> <�t�@�C��2>
+・ファイルの差分を検出
+fc (オプション) <ファイル1> <ファイル2>
 
 
 
-�yGit�R�}���h�z
-�Egit init
-�J�����g�f�B���N�g����Git�̊Ǘ����ɒu��
+【Gitコマンド】
+・git init
+カレントディレクトリをGitの管理下に置く
 
-�Egit status
-���[�N�c���[�ƃC���f�b�N�X�̏�Ԃ�\��
-HEAD�̏�ԂƃX�e�[�W���O�̏�Ԃ̍����m�F
+・git status
+ワークツリーとインデックスの状態を表示
+HEADの状態とステージングの状態の差を確認
 
-�Egit add <�t�@�C����>
-�t�@�C�����C���f�b�N�X�ɓo�^
-�t�@�C�����̓X�y�[�X��؂�ŕ����I����
-"."�ł��ׂẴt�@�C����I��
+・git add <ファイル名>
+ファイルをインデックスに登録
+ファイル名はスペース区切りで複数選択可
+"."ですべてのファイルを選択
 
-�Egit commit -m "<�R�����g>"
-�R�~�b�g����
-"-m"�̌���"--amend"������ƒ��O�̃R�~�b�g�̏C�����\�A�㏑���R�~�b�g�ł���
+・git commit -m "<コメント>"
+コミットする
+"-m"の後ろに"--amend"を入れると直前のコミットの修正が可能、上書きコミットできる
 
-�Egit log
-���|�W�g���̕ύX�������m�F
-"--graph --oneline"��t����Ɨ����̗����\��
-//�����[�g���|�W�g���̃R�~�b�g���m�F
-"git fetch"��"git log --oneline origin/master -2(�o�͂��鐔)"
+・git log
+リポジトリの変更履歴を確認
+"--graph --oneline"を付けると履歴の流れを表示
+//リモートリポジトリのコミットを確認
+"git fetch"→"git log --oneline origin/master -2(出力する数)"
 
-�Egit remote add <���O> <URL>
-�����[�g���|�W�g���ɖ��O��t���ēo�^
-�f�t�H���g����"origin"
-"-u"�I�v�V�����F����ȍ~push���Ƀ��|�W�g���ƃu�����`�����ȗ���
+・git remote add <名前> <URL>
+リモートリポジトリに名前を付けて登録
+デフォルト名は"origin"
+"-u"オプション：次回以降push時にリポジトリとブランチ名を省略可
 
-�Egit push <���|�W�g��> <�u�����`>
-�v�b�V����̃��|�W�g���ƃu�����`���w�肵�ăR�~�b�g���v�b�V��
-�����Ȃ��̏ꍇ�̓J�����g�u�����`���ΏۂƂȂ�
-"-u"�܂���"--set-upstream"�I�v�V�����F����ȍ~push���Ƀ��|�W�g���ƃu�����`�����ȗ���
+・git push <リポジトリ> <ブランチ>
+プッシュ先のリポジトリとブランチを指定してコミットをプッシュ
+引数なしの場合はカレントブランチが対象となる
+"-u"または"--set-upstream"オプション：次回以降push時にリポジトリとブランチ名を省略可
 
-�Egit clone <���|�W�g����URL> <������̃f�B���N�g����>
-�����[�g���|�W�g���𕡐����A�J�����g�f�B���N�g���Ƀ��[�J�����|�W�g���Ƃ��ĐV���ɍ쐬
-������̃f�B���N�g���͂��炩���ߍ���Ă������̖��O���w�肷��
-"git clone -l -s -n . <�f�B���N�g����>": ���[�J�����|�W�g�����N���[���A���݂̃u�����`�݂̂𕡐�
+・git clone <リポジトリのURL> <複製先のディレクトリ名>
+リモートリポジトリを複製し、カレントディレクトリにローカルリポジトリとして新たに作成
+複製先のディレクトリはあらかじめ作っておきその名前を指定する
+"git clone -l -s -n . <ディレクトリ名>": ローカルリポジトリをクローン、現在のブランチのみを複製
 
-�Egit pull <���|�W�g��> <�u�����`>
-"fetch"+"merge origin/master(�����[�g�ǐՃu�����`)"
-���|�W�g�������ȗ������origin�ɑ΂��ăv�����s��
-�����Ȃ��̏ꍇ�̓J�����g�u�����`���ΏۂƂȂ�
-���[�J���ŉ����ύX���Ă��Ȃ��ꍇ: ������}�[�W�ōX�V
-���[�J���ŕύX���������ꍇ      : �}�[�W�ōX�V(��������)
+・git pull <リポジトリ> <ブランチ>
+"fetch"+"merge origin/master(リモート追跡ブランチ)"
+リポジトリ名を省略するとoriginに対してプルを行う
+引数なしの場合はカレントブランチが対象となる
+ローカルで何も変更していない場合: 早送りマージで更新
+ローカルで変更があった場合      : マージで更新(競合あり)
 "git pull --rebase": fetch+rebase
 
-�Egit branch <�u�����`��>
-�u�����`���쐬
-�u�����`���ȗ��Ńu�����`�̈ꗗ��\��
-"git branch -r"�Ń����[�g(�ǐ�)�u�����`�̈ꗗ��\��
-"git branch -a"�Ń����[�g(�ǐ�)�ƃ��[�J���u�����`�̗�����\��
-"git branch -d <�u�����`��>"�Ńu�����`���폜�A"-d"��"-D"�ɂ���ƃ}�[�W�ς݂��ۂ����킸�����폜
-"git push --delete origin <�u�����`��>"�܂���"git push origin :<�u�����`��>"�Ń����[�g�u�����`���폜
-��"git fetch -p"�ŁA�����[�g�ō폜�ς݂̃u�����`�����[�J���ɔ��f�����
-"git branch -m <�Â��u�����`��> <�V�����u�����`��>"�Ńu�����`����ύX
+・git branch <ブランチ名>
+ブランチを作成
+ブランチ名省略でブランチの一覧を表示
+"git branch -r"でリモート(追跡)ブランチの一覧を表示
+"git branch -a"でリモート(追跡)とローカルブランチの両方を表示
+"git branch -d <ブランチ名>"でブランチを削除、"-d"を"-D"にするとマージ済みか否かを問わず強制削除
+"git push --delete origin <ブランチ名>"または"git push origin :<ブランチ名>"でリモートブランチを削除
+※"git fetch -p"で、リモートで削除済みのブランチもローカルに反映される
+"git branch -m <古いブランチ名> <新しいブランチ名>"でブランチ名を変更
 
-�Egit checkout <�u�����`��>
-��Ƃ���u�����`��؂�ւ���
-�`�F�b�N�A�E�g��̕ύX�͈ړ���̃u�����`�ɒǉ������
-"-b"�I�v�V�����F�u�����`�쐬�������ɍs��
-"-f"�I�v�V�����F��ƃc���[�̕ύX���e��j�����ċ����I�Ƀu�����`��؂�ւ���
+・git checkout <ブランチ名>
+作業するブランチを切り替える
+チェックアウト後の変更は移動後のブランチに追加される
+"-b"オプション：ブランチ作成も同時に行う
+"-f"オプション：作業ツリーの変更内容を破棄して強制的にブランチを切り替える
 
-�Egit checkout <�R�~�b�g�n�b�V��ID> <�t�@�C����>
-���[�N�X�y�[�X���w�肵���R�~�b�g�̏�Ԃɂ���
-�n�b�V��ID�ȗ�����"HEAD"�ŁA�ŐV�̃R�~�b�g�̏�Ԃɂ���
-���n�b�V��
-HEAD       : ���O�̃R�~�b�g
-FETCH_HEAD : �����[�g�u�����`�̍ŐV�̃R�~�b�g
-ORIG_HEAD  : �ŐV�̈��O�̃R�~�b�g
+・git checkout <コミットハッシュID> <ファイル名>
+ワークスペースを指定したコミットの状態にする
+ハッシュID省略又は"HEAD"で、最新のコミットの状態にする
+※ハッシュ
+HEAD       : 直前のコミット
+FETCH_HEAD : リモートブランチの最新のコミット
+ORIG_HEAD  : 最新の一つ手前のコミット
 
-�Egit stash
+・git stash
 //"git stash save"
-�R�~�b�g���Ă��Ȃ��̕ύX���e���ꎞ�I�ɑޔ�
-���[�N�X�y�[�X�͍Ō�ɃR�~�b�g������ԂɂȂ�
+コミットしていないの変更内容を一時的に退避
+ワークスペースは最後にコミットした状態になる
 //"git stash list"
-����܂łɑޔ�������Ƃ̈ꗗ��\��
-�X�^�b�V�����Ƒޔ������Ƃ��̃u�����`�ƃR�~�b�g��\��
-//"git stash show <�X�^�b�V����>"
-�w�肵���X�^�b�V���̏ڍׂ�\��
-//"git stash apply <�X�^�b�V����>"
-�X�^�b�V���ɂ���ύX�𕜊��A��������c��
-//"git stash pop <�X�^�b�V����>"
-�X�^�b�V���ɂ���ύX�𕜊��A������͎c��Ȃ�
-//"git stash drop <�X�^�b�V����>"
-�w�肵���X�^�b�V���̍폜
+これまでに退避した作業の一覧を表示
+スタッシュ名と退避したときのブランチとコミットを表示
+//"git stash show <スタッシュ名>"
+指定したスタッシュの詳細を表示
+//"git stash apply <スタッシュ名>"
+スタッシュにある変更を復活、復活後も残る
+//"git stash pop <スタッシュ名>"
+スタッシュにある変更を復活、復活後は残らない
+//"git stash drop <スタッシュ名>"
+指定したスタッシュの削除
 //"git stash clear"
-�X�^�b�V�����X�g�����ׂč폜
+スタッシュリストがすべて削除
 
-�Egit merge <�u�����`��>
-fast-foward(������): ���݂̃u�����`���w�肵���u�����`�ɐi�߂�
-non fast-foward    : �w�肵���u�����`�����݂̃u�����`�Ɏ�荞�݃}�[�W�R�~�b�g���쐬
-����������������A�C����add��commit
-"--no-ff"�I�v�V�������g���ƃ}�[�W�R�~�b�g���Ӑ}�I�ɍ쐬�ł���
-���D�悷��u�����`�����߂�
-�}�[�W���
-"git checkout --ours <�t�@�C����>"  : ���݂̃u�����`��D��
-"git checkout --theirs <�t�@�C����>": �}�[�W�Ώۂ̃u�����`��D��
-���}�[�W�̎�����
-�}�[�W���s�F"git merge --abort"
-�}�[�W�����F"git reset --hard"
-�}�[�W��͎g��Ȃ��u�����`���폜����̂��悢
-���G���["refusing to merge unrelated histories"�ƂȂ�Ƃ�
-"git merge --allow-unrelated-histories origin/master"�ł�����炵��
+・git merge <ブランチ名>
+fast-foward(早送り): 現在のブランチを指定したブランチに進める
+non fast-foward    : 指定したブランチを現在のブランチに取り込みマージコミットを作成
+競合が発生したら、修正→add→commit
+"--no-ff"オプションを使うとマージコミットを意図的に作成できる
+※優先するブランチを決める
+マージ後に
+"git checkout --ours <ファイル名>"  : 現在のブランチを優先
+"git checkout --theirs <ファイル名>": マージ対象のブランチを優先
+※マージの取り消し
+マージ失敗："git merge --abort"
+マージ成功："git reset --hard"
+マージ後は使わないブランチを削除するのがよい
+※エラー"refusing to merge unrelated histories"となるとき
+"git merge --allow-unrelated-histories origin/master"でいけるらしい
 
-�Egit rebase <�u�����`��>
-���݂̃u�����`�����x�[�X���Ďw�肵���u�����`�̗����Ɉ�{������
-����������������A�C����add��"git rebase --continue"��(������)�}�[�W
-���x�[�X���̂��������ꍇ��<�u�����`��>��"--abort"������
+・git rebase <ブランチ名>
+現在のブランチをリベースして指定したブランチの履歴に一本化する
+競合が発生したら、修正→add→"git rebase --continue"→(早送り)マージ
+リベース自体を取り消す場合は<ブランチ名>に"--abort"を書く
 
-�Egit fetch
-�����[�g�ǐՃu�����`���X�V����(origin/branchA��)
-�����[�g�u�����`�����w��ł���
-�`�F�b�N�A�E�g���Ă���u�����`�Ƀ}�[�W���Ȃ�
-�����̃u�����`�Ƃ��Ď�荞�܂�A"FETCH_HEAD"�̖��O�Ń`�F�b�N�A�E�g�ł���
-//���[�J���ɂȂ������[�g�u�����`�̎擾: git fetch��git checkout <�u�����`��>
-//���[�J���Ɋ��ɂ���ꍇ�̓}�[�W��v���⃊�x�[�X���s���K�v������
+・git fetch
+リモート追跡ブランチを更新する(origin/branchA等)
+リモートブランチ名も指定できる
+チェックアウトしているブランチにマージしない
+無名のブランチとして取り込まれ、"FETCH_HEAD"の名前でチェックアウトできる
+//ローカルにないリモートブランチの取得: git fetch→git checkout <ブランチ名>
+//ローカルに既にある場合はマージやプルやリベースを行う必要がある
 
-�Egit reset <�R�~�b�g�n�b�V���l> <�t�@�C����>
-"."�ł��ׂẴt�@�C����I��
+・git reset <コミットハッシュ値> <ファイル名>
+"."ですべてのファイルを選択
 //"--soft"
-HEAD�̈ʒu�݂̂��w��ꏊ�ɖ߂�
-���[�L���O�X�c���[��X�e�[�W���O�͎c��A�R�~�b�g�݂̂̎�����
-//"--mixed"���͉������Ȃ�
-HEAD�ƃX�e�[�W���O���w��ꏊ�ɖ߂�
-�w�肵���t�@�C�����X�e�[�W���O���珜���Aadd�̎�����
+HEADの位置のみを指定場所に戻す
+ワーキングスツリーやステージングは残る、コミットのみの取り消し
+//"--mixed"又は何もつけない
+HEADとステージングを指定場所に戻す
+指定したファイルをステージングから除く、addの取り消し
 //"--hard"
-��ƃf�B���N�g�������ׂĖ߂�
-���[�L���O�c���[�̕ύX�͎�����A�R�~�b�g�����S�Ɏ�����
-"git reset --hard ORIG_HEAD"�ōŐV�̏�Ԃɖ߂�
-//�R�~�b�g�n�b�V���l
-HEAD^, @^, HEAD~   : ��O�̃R�~�b�g
-HEAD^^, HEAD~~, @^^: ��O�̃R�~�b�g
-HEAD~{n},HEAD@{n}  : n�O�̃R�~�b�g
+作業ディレクトリもすべて戻す
+ワーキングツリーの変更は失われる、コミットを完全に取り消し
+"git reset --hard ORIG_HEAD"で最新の状態に戻る
+//コミットハッシュ値
+HEAD^, @^, HEAD~   : 一つ前のコミット
+HEAD^^, HEAD~~, @^^: 二つ前のコミット
+HEAD~{n},HEAD@{n}  : n個前のコミット
 
-�Egit diff
-�������m�F
-//�����[�g�Ƃ̕ύX
-"git diff HEAD.. <origin(�����[�g��)/branch(�u�����`��)>"
-����"git diff <origin(�����[�g��)/branch(�u�����`��)>..HEAD"
-//add����O�ŃX�e�[�W���O�ƃ��[�N�X�y�[�X�̕ύX�_
+・git diff
+差分を確認
+//リモートとの変更
+"git diff HEAD.. <origin(リモート名)/branch(ブランチ名)>"
+又は"git diff <origin(リモート名)/branch(ブランチ名)>..HEAD"
+//addする前でステージングとワークスペースの変更点
 "git diff"
-//add������ōŐV�̃R�~�b�g�Ƃ̕ύX�_
-"git diff --cached"����"git diff --staged"
-//�R�~�b�g������őO��̃R�~�b�g�Ƃ̕ύX
-"git diff HEAD^"����"git diff HEAD^..HEAD"
-//�R�~�b�g���m�̔�r
-"git diff <�R�~�b�g�n�b�V���lA>..<�R�~�b�g�n�b�V���lB>"
-//�u�����`�̔�r
-"git diff <�u�����`A>..<�u�����`B>"
-//����̃t�@�C���̔�r(add�O�Ƃ̔�r)
-"git diff -- <�t�@�C���̃p�X>"
-//����̃t�@�C���̔�r(�u�����`���m�̔�r)
-"git diff <�u�����`A> <�u�����`B> -- <�t�@�C���̃p�X>"
-//�ʃt�@�C�����m�̔�r
-"git diff -- <�t�@�C���̃p�XA> <�t�@�C���̃p�XB>"
-//�}�[�W�O�̏�Ԃ�����(�}�[�W��)�̏�ԂƔ�r
+//addした後で最新のコミットとの変更点
+"git diff --cached"又は"git diff --staged"
+//コミットした後で前回のコミットとの変更
+"git diff HEAD^"又は"git diff HEAD^..HEAD"
+//コミット同士の比較
+"git diff <コミットハッシュ値A>..<コミットハッシュ値B>"
+//ブランチの比較
+"git diff <ブランチA>..<ブランチB>"
+//特定のファイルの比較(add前との比較)
+"git diff -- <ファイルのパス>"
+//特定のファイルの比較(ブランチ同士の比較)
+"git diff <ブランチA> <ブランチB> -- <ファイルのパス>"
+//別ファイル同士の比較
+"git diff -- <ファイルのパスA> <ファイルのパスB>"
+//マージ前の状態を現在(マージ後)の状態と比較
 "git diff --ours"
-//�}�[�W����̃u�����`�̃t�@�C���̕ύX���r
+//マージ相手のブランチのファイルの変更を比較
 "git diff --theirs"
-//�}�[�W�̑���Ǝ����̗�������̕ύX���m�F
+//マージの相手と自分の両方からの変更を確認
 "git diff --base"
-���I�v�V����
-"--stat"     : �t�@�C�����Ƃɂǂꂭ�炢�ύX�������������Ɗm�F
-"--name-only": �ύX���������t�@�C�����݂̂�\��
-"-w"         : ���s��󔒂𖳎�����
-���u":" + "q"�v�Ŏ��̃R�}���h���łĂ�悤�ɂȂ�
+※オプション
+"--stat"     : ファイルごとにどれくらい変更したかをざっと確認
+"--name-only": 変更があったファイル名のみを表示
+"-w"         : 改行や空白を無視する
+※「":" + "q"」で次のコマンドが打てるようになる
 
-�Egit gc
-�ǂ�������Q�Ƃ���Ȃ��s�v�ȃI�u�W�F�N�g���폜�ł���
+・git gc
+どこからも参照されない不要なオブジェクトを削除できる
 
-�Egit reflog
-�Q�ƃ��O�A�ߋ��̃u�����`��HEAD�̓����̗�����\��
-�R�~�b�g�𕜊��ł���
+・git reflog
+参照ログ、過去のブランチやHEADの動きの履歴を表示
+コミットを復活できる
 
-�Egitignore
-git�̊Ǘ��Ώۂ���O��
-���łɈ�xadd�ς݂̏ꍇ: "git rm --cached <�t�@�C����>"���s��
-���Q�Ɓ� http://www-creators.com/archives/1662
+・gitignore
+gitの管理対象から外す
+すでに一度add済みの場合: "git rm --cached <ファイル名>"を行う
+※参照→ http://www-creators.com/archives/1662
 
-�Egit rm --cached <�t�@�C����>
-�t�@�C����git�̊Ǘ��Ώۂ��珜�O����
-"--cached"��t���Ȃ��ƃt�@�C�����ƍ폜����
-�t�H���_�̏ꍇ��"-r"�I�v�V������t����
-�����݂̃f�B���N�g�����ƊO���ꍇ��"rm -rf .git"
-                       Windows�Ȃ�"rmdir /s .git"
+・git rm --cached <ファイル名>
+ファイルをgitの管理対象から除外する
+"--cached"を付けないとファイルごと削除する
+フォルダの場合は"-r"オプションを付ける
+※現在のディレクトリごと外す場合は"rm -rf .git"
+                       Windowsなら"rmdir /s .git"
