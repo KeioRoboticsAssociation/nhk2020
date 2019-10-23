@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="joy" type="joy_node" name="DS4" />
+    <node pkg="controller_pkgtest" type="test_joyturtlesim.py" name="JoyToTurtle" />
+    <node name="turtlesim_node" pkg="turtlesim" type="turtlesim_node" />
+</launch>
