@@ -7,13 +7,13 @@ import math
 class Localization():
     
     def __init__(self):
-        self.sub_a = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.updateInput)
-        self.sub_b = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.updateInput)
-        self.sub_c = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.updateInput)
-        self.sub_d = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.updateInput)
+        self.sub_a = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.right_forward)
+        self.sub_b = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.left_forword)
+        self.sub_c = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.right_back)
+        self.sub_d = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.left_back)
         self.pub = rospy.Publisher("Float32MultiArray",Float32MultiArray,queue_size=10)
 
-    def updateInput(msg):
+    def updateInput():
         x_a, y_a = self.right_forward()
         x_b, y_b = self.left_forward()
         x_c, y_c = self.right_back()
@@ -117,4 +117,6 @@ class Localization():
 if __name__ == "__main__":
     rospy.init_node("Localization")
     l = Localization()
+    while not rospy.is_shutdown():
+        l.updateInput()
     rospy.spin()
