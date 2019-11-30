@@ -7,7 +7,10 @@ import math
 class Localization():
     
     def __init__(self):
-        self.sub = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.updateInput)
+        self.sub_a = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.updateInput)
+        self.sub_b = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.updateInput)
+        self.sub_c = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.updateInput)
+        self.sub_d = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.updateInput)
         self.pub = rospy.Publisher("Float32MultiArray",Float32MultiArray,queue_size=10)
 
     def updateInput(msg):
@@ -22,11 +25,9 @@ class Localization():
         return x_0, y_0, theta
 
     def right_forward(msg):
-        x = msg.data[0]
-        theta = msg.data[1]
         theta = 0
-        delta_r_a = 0
-        delta_theta_a = 0
+        delta_r_a = msg.data[0]
+        delta_theta_a = msg.data[1]
         r_a = 0
         l = 500
         x_a = r_a - l*math.cos(theta)
