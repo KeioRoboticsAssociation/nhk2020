@@ -13,6 +13,15 @@ class Localization():
         self.sub_c = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.right_back)
         self.sub_d = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.left_back)
         self.pub = rospy.Publisher("Float32MultiArray",Float32MultiArray,queue_size=10)
+	self.l = 500
+        self.theta_a = 0
+        self.r_a = l*math.sqrt(2) + l*math.sqrt(2)
+        self.theta_b = 0
+        self.r_b = l*math.sqrt(2) + l*math.sqrt(2)
+        self.theta_c = 0
+        self.r_c = l*math.sqrt(2) + l*math.sqrt(2)
+        self.theta_d = 0
+        self.r_d = l*math.sqrt(2) + l*math.sqrt(2)
 
     def updateInput():
         x_a, y_a = self.right_forward()
@@ -32,14 +41,11 @@ class Localization():
         return 0
 
     def right_forward(msg):
-        theta_a = 0
-        r_a = l*math.sqrt(2) + l*math.sqrt(2)
         delta_r_a = msg.data[0]
         delta_theta_a = msg.data[1]
-        l = 500
-        x_a = r_a - l*math.cos(theta)
-        y_a = r_a - l*math.sin(theta)
-        theta_a = theta_a + delta_theta_a
+        x_a = self.r_a - l*math.cos(theta)
+        y_a = self.r_a - l*math.sin(theta)
+        self.theta_a = self.theta_a + delta_theta_a
         '''
         r_a = r_a + delta_r_a * ((math.cos(theta + (theta_a - delta_theta_a / 2.0) + math.pi / 2)),
                                     math.sin(theta + (theta_a - delta_theta_a / 2.0)))
@@ -52,8 +58,8 @@ class Localization():
 		delta_y = - delta_r_a * math.sin(theta)
 	else:
 		delta_y = delta_r_a * math.sin(theta)
-        x_a = x_a + (delta_x) * (math.cos(theta + (theta_a - delta_theta_a / 2.0) + math.pi/2))
-        y_a = y_a + (delta_y) * (math.sin(theta + (theta_a - delta_theta_a / 2.0) + math.pi/2))
+        x_a = x_a + (delta_x) * (math.cos(theta + (self.theta_a - delta_theta_a / 2.0) + math.pi/2))
+        y_a = y_a + (delta_y) * (math.sin(theta + (self.theta_a - delta_theta_a / 2.0) + math.pi/2))
 
         ##print("-------------")
         ##print(x)
