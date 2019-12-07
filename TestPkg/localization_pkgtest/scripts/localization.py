@@ -43,8 +43,8 @@ class Localization():
     def right_forward(msg):
         delta_r_a = msg.data[0]
         delta_theta_a = msg.data[1]
-        x_a = self.r_a - l*math.cos(theta)
-        y_a = self.r_a - l*math.sin(theta)
+        x_a = self.r_a - self.l*math.cos(theta)
+        y_a = self.r_a - self.l*math.sin(theta)
         self.theta_a = self.theta_a + delta_theta_a
         '''
         r_a = r_a + delta_r_a * ((math.cos(theta + (theta_a - delta_theta_a / 2.0) + math.pi / 2)),
@@ -69,8 +69,8 @@ class Localization():
     def left_forword(msg):
         delta_r_b = msg.data[0]
         delta_theta_b = msg.data[1]
-        x_b = self.r_b - l*math.cos(theta)
-        y_b = self.r_b - l*math.sin(theta)
+        x_b = self.r_b - self.l*math.cos(theta)
+        y_b = self.r_b - self.l*math.sin(theta)
         self.theta_b = self.theta_b + delta_theta_b
 	if delta_r_b*math.cos(theta) < 0:
 		delta_x = - delta_r_b * math.cos(theta)
@@ -84,8 +84,8 @@ class Localization():
         r_a = r_a + delta_r_a * ((math.cos(theta + (theta_a - delta_theta_a / 2.0) + math.pi / 2)),
                                     math.sin(theta + (theta_a - delta_theta_a / 2.0)))
         '''
-        x_b = x_b + (delta_x) * (math.cos(theta + (selftheta_b - delta_theta_b / 2.0) + math.pi))
-        y_b = y_b + (delta_y) * (math.sin(theta + (self.theta_b - delta_theta_b / 2.0) + math.pi))
+        x_b = x_b + (delta_x) * (math.cos(theta + (selftheta_b - delta_theta_b / 2.0) + math.pi/2))
+        y_b = y_b + (delta_y) * (math.sin(theta + (self.theta_b - delta_theta_b / 2.0) + math.pi/2))
 
         ##print("-------------")
         ##print(x)
@@ -94,21 +94,26 @@ class Localization():
 
         
 
-    def right_back():
-        theta_c = 0
-        r_c = 0
+    def right_back(msg):
         delta_r_c = msg.data[0]
         delta_theta_c = msg.data[1]
-        l = 500
-        x_c = r_c - l*math.cos(theta)
-        y_c = r_c - l*math.sin(theta)
-        theta_c = theta_c + delta_theta_c
+        x_c = self.r_c - self.l*math.cos(theta)
+        y_c = self.r_c - self.l*math.sin(theta)
+        self.theta_c = self.theta_c + delta_theta_c
+	if delta_r_c*math.cos(theta) < 0:
+		delta_x = - delta_r_c * math.cos(theta)
+	else:
+		delta_x = delta_r_c * math.sin(theta)
+	if delta_r_c*math.sin(theta) < 0:
+		delta_y = - delta_r_c * math.sin(theta)
+	else:
+		delta_y = delta_r_c * math.sin(theta)
         '''
         r_a = r_a + delta_r_a * ((math.cos(theta + (theta_a - delta_theta_a / 2.0) + math.pi / 2)),
                                     math.sin(theta + (theta_a - delta_theta_a / 2.0)))
         '''
-        x_c = x_c + (delta_r_c * math.cos(theta)) * (math.cos(theta + (theta_c - delta_theta_c / 2.0) + math.pi))
-        y_c = y_c + (delta_r_c * math.sin(theta)) * (math.sin(theta + (theta_c - delta_theta_c / 2.0) + math.pi))
+        x_c = x_c + (delta_x) * (math.cos(theta + (self.theta_c - delta_theta_c / 2.0) + math.pi/2))
+        y_c = y_c + (delta_y) * (math.sin(theta + (self.theta_c - delta_theta_c / 2.0) + math.pi/2))
 
         ##print("-------------")
         ##print(x)
