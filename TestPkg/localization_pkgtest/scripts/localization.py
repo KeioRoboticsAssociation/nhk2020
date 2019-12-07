@@ -14,13 +14,13 @@ class Localization():
         self.sub_d = rospy.Subscriber("array_d",Float32MultiArray,self.left_back)
         self.pub = rospy.Publisher("array_localization",Float32MultiArray,queue_size=10)
 	self.l = 500
-        self.theta_a = 0
+        self.theta_a = math.pi / 4
         self.r_a = l*math.sqrt(2) + l*math.sqrt(2)
-        self.theta_b = 0
+        self.theta_b = 3 * math.pi / 4
         self.r_b = l*math.sqrt(2) + l*math.sqrt(2)
-        self.theta_c = 0
+        self.theta_c = -math.pi / 4
         self.r_c = l*math.sqrt(2) + l*math.sqrt(2)
-        self.theta_d = 0
+        self.theta_d = - 3 * math.pi / 4
         self.r_d = l*math.sqrt(2) + l*math.sqrt(2)
 
     def updateInput():
@@ -121,21 +121,26 @@ class Localization():
         return x_c, y_c
 
 
-    def left_back():
-        theta_d = 0
-        r_d = 0
+    def left_back(msg):
         delta_r_d = msg.data[0]
         delta_theta_d = msg.data[1]
-        l = 500
-        x_d = r_d - l*math.cos(theta)
-        y_d = r_d - l*math.sin(theta)
-        theta_d = theta_d + delta_theta_d
+        x_d = self.r_d - self.l*math.cos(theta)
+        y_d = self.r_d - self.l*math.sin(theta)
+        self.theta_d = self.theta_d + delta_theta_d
+	if delta_r_d*math.cos(theta) < 0:
+		delta_x = - delta_r_d * math.cos(theta)
+	else:
+		delta_x = delta_r_d * math.sin(theta)
+	if delta_r_d*math.sin(theta) < 0:
+		delta_y = - delta_r_d * math.sin(theta)
+	else:
+		delta_y = delta_r_d * math.sin(theta)
         '''
         r_a = r_a + delta_r_a * ((math.cos(theta + (theta_a - delta_theta_a / 2.0) + math.pi / 2)),
                                     math.sin(theta + (theta_a - delta_theta_a / 2.0)))
         '''
-        x_d = x_d + (delta_r_d * math.cos(theta)) * (math.cos(theta + (theta_d - delta_theta_d / 2.0) + math.pi))
-        y_d = y_d + (delta_r_d * math.sin(theta)) * (math.sin(theta + (theta_d - delta_theta_d / 2.0) + math.pi))
+        x_d = x_d + (delta_x) * (math.cos(theta + (self.theta_d - delta_theta_d / 2.0) + math.pi/2))
+        y_d = y_d + (delta_y) * (math.sin(theta + (self.theta_d - delta_theta_d / 2.0) + math.pi/2))
 
         ##print("-------------")
         ##print(x)
