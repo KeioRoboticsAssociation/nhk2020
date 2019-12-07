@@ -15,15 +15,15 @@ class Localization():
         self.pub = rospy.Publisher("array_localization",Float32MultiArray,queue_size=10)
 	self.l = 500
         self.theta_a = math.pi / 4
-        self.r_a = l*math.sqrt(2) + l*math.sqrt(2)
+        self.r_a = self.l*math.sqrt(2) + self.l*math.sqrt(2)
         self.theta_b = 3 * math.pi / 4
-        self.r_b = l*math.sqrt(2) + l*math.sqrt(2)
+        self.r_b = self.l*math.sqrt(2) + self.l*math.sqrt(2)
         self.theta_c = -math.pi / 4
-        self.r_c = l*math.sqrt(2) + l*math.sqrt(2)
+        self.r_c = self.l*math.sqrt(2) + self.l*math.sqrt(2)
         self.theta_d = - 3 * math.pi / 4
-        self.r_d = l*math.sqrt(2) + l*math.sqrt(2)
+        self.r_d = self.l*math.sqrt(2) + self.l*math.sqrt(2)
 
-    def updateInput():
+    def updateInput(self):
         x_a, y_a = self.right_forward()
         x_b, y_b = self.left_forward()
         x_c, y_c = self.right_back()
@@ -40,7 +40,7 @@ class Localization():
 	self.pub.publish(msg)
         return 0
 
-    def right_forward(msg):
+    def right_forward(self,msg):
         delta_r_a = msg.data[0]
         delta_theta_a = msg.data[1]
         x_a = self.r_a - self.l*math.cos(theta)
@@ -66,7 +66,7 @@ class Localization():
         ##print(theta)
         return x_a, y_a
 
-    def left_forword(msg):
+    def left_forword(self,msg):
         delta_r_b = msg.data[0]
         delta_theta_b = msg.data[1]
         x_b = self.r_b - self.l*math.cos(theta)
@@ -84,7 +84,7 @@ class Localization():
         r_a = r_a + delta_r_a * ((math.cos(theta + (theta_a - delta_theta_a / 2.0) + math.pi / 2)),
                                     math.sin(theta + (theta_a - delta_theta_a / 2.0)))
         '''
-        x_b = x_b + (delta_x) * (math.cos(theta + (selftheta_b - delta_theta_b / 2.0) + math.pi/2))
+        x_b = x_b + (delta_x) * (math.cos(theta + (self.theta_b - delta_theta_b / 2.0) + math.pi/2))
         y_b = y_b + (delta_y) * (math.sin(theta + (self.theta_b - delta_theta_b / 2.0) + math.pi/2))
 
         ##print("-------------")
@@ -94,7 +94,7 @@ class Localization():
 
         
 
-    def right_back(msg):
+    def right_back(self,msg):
         delta_r_c = msg.data[0]
         delta_theta_c = msg.data[1]
         x_c = self.r_c - self.l*math.cos(theta)
@@ -121,7 +121,7 @@ class Localization():
         return x_c, y_c
 
 
-    def left_back(msg):
+    def left_back(self,msg):
         delta_r_d = msg.data[0]
         delta_theta_d = msg.data[1]
         x_d = self.r_d - self.l*math.cos(theta)
