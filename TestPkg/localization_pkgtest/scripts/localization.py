@@ -24,6 +24,7 @@ class Localization():
         self.r_d = self.l*math.sqrt(2) + self.l*math.sqrt(2)
 
     def updateInput(self):
+	## 以下引数エラー、メソッドの作り直しが必要
         x_a, y_a = self.right_forward()
         x_b, y_b = self.left_forward()
         x_c, y_c = self.right_back()
