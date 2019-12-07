@@ -8,11 +8,11 @@ import math
 class Localization():
     
     def __init__(self):
-        self.sub_a = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.right_forward)
-        self.sub_b = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.left_forword)
-        self.sub_c = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.right_back)
-        self.sub_d = rospy.Subscriber("Float32MultiArray",Float32MultiArray,self.left_back)
-        self.pub = rospy.Publisher("Float32MultiArray",Float32MultiArray,queue_size=10)
+        self.sub_a = rospy.Subscriber("array_a",Float32MultiArray,self.right_forward)
+        self.sub_b = rospy.Subscriber("array_b",Float32MultiArray,self.left_forword)
+        self.sub_c = rospy.Subscriber("array_c",Float32MultiArray,self.right_back)
+        self.sub_d = rospy.Subscriber("array_d",Float32MultiArray,self.left_back)
+        self.pub = rospy.Publisher("array_localization",Float32MultiArray,queue_size=10)
 	self.l = 500
         self.theta_a = 0
         self.r_a = l*math.sqrt(2) + l*math.sqrt(2)
