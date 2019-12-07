@@ -22,11 +22,15 @@ class Localization():
         y_0 = (y_a + y_b + y_c + y_d) / 4
         theta = (math.atan(y_a - y_0 / x_a - x_0) + math.atan(y_b - y_0 / x_b - x_0) 
                 + math.atan(y_c - y_0 / x_c - x_0) + math.atan(y_d - y_0 / x_d - x_0)) / 4
-        return x_0, y_0, theta
+	msg = Float32MultiArray()
+	msg.data[0] = math.sqrt(x_0 ** 2 + y_0 ** 2)
+	msg.data[1] = theta   
+	self.pub.publish(msg)
+        return 0
 
     def right_forward(msg):
         theta_a = 0
-        r_a = 0
+        r_a = l*math.sqrt(2) + l*math.sqrt(2)
         delta_r_a = msg.data[0]
         delta_theta_a = msg.data[1]
         l = 500
@@ -37,8 +41,16 @@ class Localization():
         r_a = r_a + delta_r_a * ((math.cos(theta + (theta_a - delta_theta_a / 2.0) + math.pi / 2)),
                                     math.sin(theta + (theta_a - delta_theta_a / 2.0)))
         '''
-        x_a = x_a + (delta_r_a * math.cos(theta)) * (math.cos(theta + (theta_a - delta_theta_a / 2.0) + math.pi))
-        y_a = y_a + (delta_r_a * math.sin(theta)) * (math.sin(theta + (theta_a - delta_theta_a / 2.0) + math.pi))
+	if delta_r_a*math.cos(theta) < 0:
+		delta_x = - delta_r_a * math.cos(theta)
+	else:
+		delta_x = delta_r_a * math.sin(theta)
+	if delta_r_a*math.sin(theta) < 0:
+		delta_y = - delta_r_a * math.sin(theta)
+	else:
+		delta_y = delta_r_a * math.sin(theta)
+        x_a = x_a + (delta_x) * (math.cos(theta + (theta_a - delta_theta_a / 2.0) + math.pi/2))
+        y_a = y_a + (delta_y) * (math.sin(theta + (theta_a - delta_theta_a / 2.0) + math.pi/2))
 
         ##print("-------------")
         ##print(x)
@@ -47,7 +59,7 @@ class Localization():
 
     def left_forword():
         theta_b = 0
-        r_b = 0
+        r_b = -l*math.cos(theta)
         delta_r_b = msg.data[0]
         delta_theta_b = msg.data[1]
         l = 500
@@ -117,6 +129,8 @@ class Localization():
 if __name__ == "__main__":
     rospy.init_node("Localization")
     l = Localization()
+    rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         l.updateInput()
+	rate.sleep()
     rospy.spin()
