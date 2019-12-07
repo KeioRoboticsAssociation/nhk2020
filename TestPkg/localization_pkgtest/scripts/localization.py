@@ -2,6 +2,7 @@
 #encoding: utf8
 import rospy
 from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import MultiArrayDimension
 import math
 
 class Localization():
@@ -23,8 +24,10 @@ class Localization():
         theta = (math.atan(y_a - y_0 / x_a - x_0) + math.atan(y_b - y_0 / x_b - x_0) 
                 + math.atan(y_c - y_0 / x_c - x_0) + math.atan(y_d - y_0 / x_d - x_0)) / 4
 	msg = Float32MultiArray()
-	msg.data[0] = math.sqrt(x_0 ** 2 + y_0 ** 2)
-	msg.data[1] = theta   
+	msg.layout.dim.append(MultiArrayDimension())
+	msg.layout.dim[0].label = "array"
+	array.layout.dim[0].size = 2
+	msg.data = [math.sqrt(x_0 ** 2 + y_0 ** 2), theta]   
 	self.pub.publish(msg)
         return 0
 
