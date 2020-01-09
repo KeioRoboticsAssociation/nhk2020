@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="localization_pkgtest" type="localization.py" name="Localization">
+  </node>
+  <node pkg="localization_pkgtest" type="multiarray_pub.py" name="Wheel_A">
+    <remap from="MultiArrayPublisher" to="array_a"/>
+  </node>
+  <node pkg="localization_pkgtest" type="multiarray_pub.py" name="Wheel_B" >
+    <remap from="MultiArrayPublisher" to="array_b"/>
+  </node>
+  <node pkg="localization_pkgtest" type="multiarray_pub.py" name="Wheel_C" >
+    <remap from="MultiArrayPublisher" to="array_c"/>
+  </node>
+  <node pkg="localization_pkgtest" type="multiarray_pub.py" name="Wheel_D" >
+    <remap from="MultiArrayPublisher" to="array_d"/>
+  </node>
+</launch>
