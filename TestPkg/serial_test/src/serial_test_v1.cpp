@@ -33,7 +33,7 @@ int open_serial(const char *device_name)
     return fd1;
 }
 
-int fd1;
+int fd1 = 0;
 char endmsg = '\n';
 bool floatflag = false;
 bool intflag = false;
@@ -137,11 +137,13 @@ int main(int argc, char **argv)
     arg_n.getParam("looprate", sub_loop_rate);
 
     fd1 = open_serial(port_name.c_str());
-    if (fd1 < 0)
+    while (fd1 < 0)
     {
+        fd1 = open_serial(port_name.c_str());
         ROS_ERROR("Serial Fail: cound not open %s", port_name.c_str());
         printf("Serial Fail\n");
-        ros::shutdown();
+        //ros::shutdown();
+        sleep(1);
     }
 
     char buf_pub[256] = {0};

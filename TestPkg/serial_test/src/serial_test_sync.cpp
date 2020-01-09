@@ -137,17 +137,20 @@ int main(int argc, char **argv)
     arg_n.getParam("looprate", sub_loop_rate);
 
     fd1 = open_serial(port_name.c_str());
-    if (fd1 < 0)
+    while (fd1 < 0)
     {
+        fd1 = open_serial(port_name.c_str());
         ROS_ERROR("Serial Fail: cound not open %s", port_name.c_str());
         printf("Serial Fail\n");
-        ros::shutdown();
+        //ros::shutdown();
+        sleep(1);
     }
 
     char buf[256] = {0};
     int bufnum[2] = {0, 0};
     int bufthreshold = 128;
     bool endmsg_flag = false;
+    bool skip_flag = false;
     char *buf_pub;
     int recv_data_size = 0;
     int arraysize = 0;
@@ -158,17 +161,32 @@ int main(int argc, char **argv)
     {
         int recv_data = read(fd1, &buf[bufnum[1]], bufthreshold);
 
-        if (recv_data > 0 && recv_data < 50)
+        if (recv_data > 0 && recv_data < 64)
         {
             bufnum[1] += recv_data;
 
-            while (1)
+            while (!(endmsg_flag || skip_flag))
             {
                 recv_data_size++;
                 if (buf[bufnum[0] + recv_data_size - 1] == endmsg)
                 {
-                    endmsg_flag = true;
-                    break;
+                    arraysize = *(int *)(&buf[bufnum[0] + 1]);
+                    switch (buf[bufnum[0]])
+                    {
+                    case 'f':
+                    case 'i':
+                        if (recv_data_size == arraysize * 4 + 6)
+                            endmsg_flag = true;
+                        else if (recv_data_size > arraysize * 4 + 6)
+                            skip_flag = true;
+                        break;
+                    case 'c':
+                        if (recv_data_size == arraysize + 6)
+                            endmsg_flag = true;
+                        else if (recv_data_size > arraysize + 6)
+                            skip_flag = true;
+                        break;
+                    }
                 }
                 if (bufnum[0] + recv_data_size >= bufnum[1])
                 {
@@ -231,11 +249,14 @@ int main(int argc, char **argv)
                 default:
                     ROS_INFO("Not Float / Int / Char");
                 }
+            }
 
+            if (endmsg_flag || skip_flag)
+            {
                 bufnum[0] += recv_data_size;
                 recv_data_size = 0;
                 endmsg_flag = false;
-
+                skip_flag = false;
                 if (bufnum[0] >= bufthreshold)
                 {
                     bufnum[1] -= bufnum[0];
