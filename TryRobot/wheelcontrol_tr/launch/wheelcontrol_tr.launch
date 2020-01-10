@@ -1,0 +1,13 @@
+<launch>
+
+  <!--frequency [Hz]-->
+
+  <arg name="frequency" default="30" />
+
+  <!--control wheel node-->
+
+  <node pkg="wheelcontrol_tr" name="wheelcontrol_tr" type="wheelcontrol_tr_node" output="screen">
+    <param name = "rate" value = "frequency"/>
+  </node>
+
+</launch>
