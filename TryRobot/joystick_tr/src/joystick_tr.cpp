@@ -4,8 +4,11 @@
 
 #include "sensor_msgs/Joy.h"
 
+#define PI 3.141592f
+
 float joystick_R[2] = {0.0, 0.0};
 int button[4] = {0, 0, 0, 0};
+float omega = 0.0;
 
 void msgCallback(const sensor_msgs::Joy &msg)
 {
@@ -15,10 +18,14 @@ void msgCallback(const sensor_msgs::Joy &msg)
     {
         button[i] = msg.buttons[i];
     }
+    if (button[0] == 1 && button[1] == 0)
+        omega = 1.0;
+    else if (button[0] == 0 && button[1] == 1)
+        omega = -1.0;
 }
 
-std_msgs::Float32MultiArray pub_multi_float(float *, int);
-std_msgs::Int32MultiArray pub_multi_int(int *, int);
+//std_msgs::Float32MultiArray pub_multi_float(float *, int);
+//std_msgs::Int32MultiArray pub_multi_int(int *, int);
 
 int main(int argc, char **argv)
 {
@@ -39,8 +46,9 @@ int main(int argc, char **argv)
     {
         std_msgs::Float32MultiArray floatarray;
         floatarray.data.resize(2);
-        floatarray.data[0] = joystick_R[0] * 100;
-        floatarray.data[1] = joystick_R[1] * 100;
+        floatarray.data[0] = joystick_R[0] * 2;
+        floatarray.data[1] = joystick_R[1] * 2;
+        floatarray.data[2] = omega;
         multifloat_pub.publish(floatarray);
 
         std_msgs::Int32MultiArray intarray;

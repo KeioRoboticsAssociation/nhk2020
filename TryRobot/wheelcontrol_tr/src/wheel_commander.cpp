@@ -5,6 +5,11 @@ static float vx = 0, vy = 0, w = 0, d = 150, theta_1 = 0, theta_2 = 0, theta_3 =
 static float vx_1 = 0, vy_1 = 0, vx_2 = 0, vy_2 = 0, vx_3 = 0, vy_3 = 0, vx_4 = 0, vy_4 = 0;
 static float v_1=0,v_2=0,v_3=0,v_4=0;
 
+float target_speed_1 = 0;
+float target_speed_2 = 0;
+float target_speed_3 = 0;
+float target_speed_4 = 0;
+
 void wheel_control(float theta,float vx,float vy, float w)
 {
 
@@ -17,7 +22,13 @@ w:ロボットの中心の角速度。ジョイコンで入力
   ------------------------------------*/
 
     //theta += w * dt;
-	if (theta == 0 && vx==0 && vy==0);//0除算を防ぐ
+	if (w == 0 && vx==0 && vy==0){
+    theta_1 = 0;
+    theta_2 = 0;
+    theta_3 = 0;
+    theta_4 = 0;
+  }
+  
 	else {//４輪に渡す角度
 		theta_1 = atan((vy + d * w * cos(theta)) / (vx - d * w * sin(theta)));
 		theta_2 = atan((vy - d * w * sin(theta)) / (vx - d * w * cos(theta)));
@@ -67,10 +78,10 @@ w:ロボットの中心の角速度。ジョイコンで入力
   }
 
   //モーター角速度に変換
-  float target_speed_1 = v_1 * 180*1000/35/M_PI;
-  float target_speed_2 = v_2 * 180*1000/35/M_PI;
-  float target_speed_3 = v_3 * 180*1000/35/M_PI;
-  float target_speed_4 = v_4 * 180*1000/35/M_PI;
+  target_speed_1 = v_1 * 180 * 1000 / 35 / M_PI;
+  target_speed_2 = v_2 * 180 * 1000 / 35 / M_PI;
+  target_speed_3 = v_3 * 180 * 1000 / 35 / M_PI;
+  target_speed_4 = v_4 * 180 * 1000 / 35 / M_PI;
 
   /*
   v_1=sqrt(vx*vx+vy*vy-2*d*w*(vx*sin(theta)-vy*cos(theta))+d*d*w*w);//sqrt(vx_1^2+vy_1^2)
