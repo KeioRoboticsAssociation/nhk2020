@@ -1,0 +1,18 @@
+<launch>
+
+  <!--control_frequency [Hz]-->
+
+  <arg name="control_frequency" default="30" />
+
+
+  <!--joystick-->
+
+  <include file="$(find joystick_tr)/launch/joystick_tr.launch" />
+
+
+  <!--control wheel-->
+
+
+  <!--mbed serial-->
+
+</launch>
