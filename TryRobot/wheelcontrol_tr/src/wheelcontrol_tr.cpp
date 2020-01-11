@@ -4,21 +4,29 @@
 
 #include "sensor_msgs/Joy.h"
 
+extern float vx, vy, w, d, theta_1, theta_2, theta_3, theta_4, theta;
+extern float vx_1, vy_1, vx_2, vy_2, vx_3, vy_3, vx_4, vy_4;
+extern float v_1, v_2, v_3, v_4;
+void wheel_control(float, float, float, float);
+
+float theta = 0, joy_x = 0, joy_y = 0, omega = 0;
+
 void msgCallback(const sensor_msgs::Joy &msg)
 {
+    
     ;
 }
-
-std_msgs::Float32MultiArray pub_multi_float(float *, int);
-std_msgs::Int32MultiArray pub_multi_int(int *, int);
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "wheelcontrol_tr_node");
 
     ros::NodeHandle n;
-    ros::Publisher multifloat_pub = n.advertise<std_msgs::Float32MultiArray>("Serial_sub_float", 10);
-    ros::Publisher multiint_pub = n.advertise<std_msgs::Int32MultiArray>("Serial_sub_int", 10);
+    ros::Publisher pub_RF = n.advertise<std_msgs::Float32MultiArray>("control_RF", 10);
+    ros::Publisher pub_LF = n.advertise<std_msgs::Float32MultiArray>("control_LF", 10);
+    ros::Publisher pub_LB = n.advertise<std_msgs::Float32MultiArray>("control_LB", 10);
+    ros::Publisher pub_RB = n.advertise<std_msgs::Float32MultiArray>("control_RB", 10);
+    //ros::Publisher multiint_pub = n.advertise<std_msgs::Int32MultiArray>("Serial_sub_int", 10);
 
     ros::NodeHandle arg_n("~");
     int looprate = 30; // Hz
@@ -33,13 +41,7 @@ int main(int argc, char **argv)
         floatarray.data[1] = 100;
         multifloat_pub.publish(floatarray);
 
-        std_msgs::Int32MultiArray intarray;
-        intarray.data.resize(4);
-        for (int i = 0; i < 4; i++)
-        {
-            intarray.data[i] = i;
-        }
-        multiint_pub.publish(intarray);
+        wheel_control(theta, joy_x, joy_y, omega);
 
         ros::spinOnce();
         loop_rate.sleep();
