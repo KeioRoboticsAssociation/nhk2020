@@ -137,13 +137,16 @@ int main(int argc, char **argv)
     arg_n.getParam("looprate", sub_loop_rate);
 
     fd1 = open_serial(port_name.c_str());
-    while (fd1 < 0)
+
+    while(ros::ok())
     {
         fd1 = open_serial(port_name.c_str());
         ROS_ERROR("Serial Fail: cound not open %s", port_name.c_str());
         printf("Serial Fail\n");
         //ros::shutdown();
         sleep(1);
+        if(fd1 >= 0)
+            break;
     }
 
     char buf_pub[256] = {0};

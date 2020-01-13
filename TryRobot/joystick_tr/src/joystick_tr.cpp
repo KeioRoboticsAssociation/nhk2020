@@ -6,26 +6,25 @@
 
 #define PI 3.141592f
 
-float joystick_R[2] = {0.0, 0.0};
-int button[4] = {0, 0, 0, 0};
+float joystick_R[6] = {0};
+int button[12] = {0};
 float omega = 0.0;
 
 void msgCallback(const sensor_msgs::Joy &msg)
 {
     joystick_R[0] = -msg.axes[2];
     joystick_R[1] = msg.axes[3];
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 12; i++)
     {
         button[i] = msg.buttons[i];
     }
-    if (button[0] == 1 && button[1] == 0)
+    if (button[4] == 1 && button[5] == 0)
         omega = 1.0;
-    else if (button[0] == 0 && button[1] == 1)
+    else if (button[4] == 0 && button[5] == 1)
         omega = -1.0;
+    else
+        omega = 0;
 }
-
-//std_msgs::Float32MultiArray pub_multi_float(float *, int);
-//std_msgs::Int32MultiArray pub_multi_int(int *, int);
 
 int main(int argc, char **argv)
 {
@@ -45,15 +44,15 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         std_msgs::Float32MultiArray floatarray;
-        floatarray.data.resize(2);
-        floatarray.data[0] = joystick_R[0] * 2;
-        floatarray.data[1] = joystick_R[1] * 2;
-        floatarray.data[2] = omega;
+        floatarray.data.resize(3);
+        floatarray.data[0] = joystick_R[0] / (float)(looprate);
+        floatarray.data[1] = joystick_R[1] / (float)(looprate);
+        floatarray.data[2] = omega / (float)(looprate);
         multifloat_pub.publish(floatarray);
 
         std_msgs::Int32MultiArray intarray;
-        intarray.data.resize(4);
-        for (int i = 0; i < 4; i++)
+        intarray.data.resize(12);
+        for (int i = 0; i < 12; i++)
         {
             intarray.data[i] = button[i];
         }

@@ -8,13 +8,14 @@ extern float theta_1, theta_2, theta_3, theta_4;
 extern float target_speed_1, target_speed_2, target_speed_3, target_speed_4;
 void wheel_control(float, float, float, float);
 
-float theta = 0, joy_x = 0, joy_y = 0, omega = 0;
+float bno_theta = 0, joy_x = 0, joy_y = 0, omega = 0, delta_omega = 0;
+float joy_xy = 0, old_joy_xy = 0, old_omega = 0;
 
 void msgCallback(const std_msgs::Float32MultiArray &msg)
 {
-    joy_x = msg.data[0];
-    joy_y = msg.data[1];
-    omega = +msg.data[2];
+    joy_x = msg.data[0] / 20;
+    joy_y = msg.data[1] / 20;
+    delta_omega = msg.data[2] / 200;
 }
 
 int main(int argc, char **argv)
@@ -31,14 +32,56 @@ int main(int argc, char **argv)
     ros::Subscriber joy_sub = n.subscribe("control_float", 100, msgCallback);
 
     ros::NodeHandle arg_n("~");
-    int looprate = 30; // Hz
+    int looprate = 30;           // Hz
+    float accel[2] = {1.0, 1.0}; // [vel, omega]
     arg_n.getParam("frequency", looprate);
+    arg_n.getParam("accel_xy", accel[0]);
+    arg_n.getParam("accel_theta", accel[1]);
+
+    accel[0] /= (float)looprate;
+    accel[1] /= (float)looprate;
 
     ros::Rate loop_rate(looprate);
     while (ros::ok())
     {
-        wheel_control(theta, joy_x, joy_y, omega);
+        omega += delta_omega / (float)looprate;
+        if (omega > old_omega)
+        {
+            if (omega > old_omega + accel[1])
+                omega = old_omega + accel[1];
+        }
+        else
+        {
+            if (omega < old_omega - accel[1])
+                omega = old_omega - accel[1];
+        }
+        old_omega = omega;
 
+        joy_xy = sqrt(joy_x * joy_x + joy_y * joy_y);
+        if (joy_xy < 1e-8)
+        {
+            joy_x = 0;
+            joy_y = 0;
+        }
+        else
+        {
+            float joy_xy_temp = joy_xy;
+            if (joy_xy > old_joy_xy)
+            {
+                if (joy_xy > old_joy_xy + accel[0])
+                    joy_xy = old_joy_xy + accel[0];
+            }
+            else
+            {
+                if (joy_xy < old_joy_xy - accel[0])
+                    joy_xy = old_joy_xy - accel[0];
+            }
+            joy_x *= joy_xy / joy_xy_temp;
+            joy_y *= joy_xy / joy_xy_temp;
+        }
+        old_joy_xy = joy_xy;
+
+        wheel_control(bno_theta, joy_x, joy_y, omega);
 
         std_msgs::Float32MultiArray floatarray;
         floatarray.data.resize(2);

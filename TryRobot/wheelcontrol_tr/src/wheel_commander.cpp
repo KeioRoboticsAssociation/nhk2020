@@ -1,9 +1,8 @@
 #include <math.h>
-#include <iostream>
 
-static float vx = 0, vy = 0, w = 0, d = 150, theta_1 = 0, theta_2 = 0, theta_3 = 0, theta_4 = 0, theta = 0;//dはロボットから車輪までの距離(単位はm)
-static float vx_1 = 0, vy_1 = 0, vx_2 = 0, vy_2 = 0, vx_3 = 0, vy_3 = 0, vx_4 = 0, vy_4 = 0;
-static float v_1=0,v_2=0,v_3=0,v_4=0;
+float vx = 0, vy = 0, w = 0, d = 150, theta_1 = 0, theta_2 = 0, theta_3 = 0, theta_4 = 0, theta = 0;//dはロボットから車輪までの距離(単位はm)
+float vx_1 = 0, vy_1 = 0, vx_2 = 0, vy_2 = 0, vx_3 = 0, vy_3 = 0, vx_4 = 0, vy_4 = 0;
+float v_1=0,v_2=0,v_3=0,v_4=0;
 
 float target_speed_1 = 0;
 float target_speed_2 = 0;
