@@ -80,7 +80,7 @@ void wheel_control(float theta_body, float vx, float vy, float w)
       n_pi[i] += 2;
     else if (theta_st[i] < theta_temp[i] + PI * (float)(n_pi[i] - 1))
       n_pi[i] -= 2;
-    theta_st_temp[i] = theta_temp[i] + 2.0f * PI * (float)n_pi[i];
+    theta_st_temp[i] = theta_temp[i] + PI * (float)n_pi[i];
   }
 
   // calc speed and theta(wheel)
@@ -105,7 +105,7 @@ void wheel_control(float theta_body, float vx, float vy, float w)
       theta_st[i] = theta_st_temp[i];
     }
   }
-
+  
   theta_1 = theta_st_temp[0] - theta_body;
   theta_2 = theta_st_temp[1] - theta_body;
   theta_3 = theta_st_temp[2] - theta_body;

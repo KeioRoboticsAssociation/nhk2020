@@ -18,6 +18,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(wheelcontrol_tr_node src/wheelcontrol_tr.cpp src/wheel_commander.cpp)
+add_executable(wheelcontrol_tr_node src/wheelcontrol_tr.cpp src/wheel_commander2.cpp)
 add_dependencies(wheelcontrol_tr_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(wheelcontrol_tr_node ${catkin_LIBRARIES})

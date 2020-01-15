@@ -45,9 +45,9 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(looprate);
     while (ros::ok())
     {
-        joy_x = joy_x_t / (float)looprate;
-        joy_y = joy_y_t / (float)looprate;
-        omega = omega_t / (float)looprate;
+        joy_x = joy_x_t * 3.0f / (float)looprate;
+        joy_y = joy_y_t * 3.0f / (float)looprate;
+        omega = omega_t * 3.0f / (float)looprate;
         if (omega > old_omega)
         {
             if (omega > old_omega + accel[1])
@@ -85,6 +85,7 @@ int main(int argc, char **argv)
         old_joy_xy = joy_xy;
 
         wheel_control(bno_theta, joy_x, joy_y, omega);
+        bno_theta += omega;///////////////////////////////
 
         std_msgs::Float32MultiArray floatarray;
         floatarray.data.resize(2);
