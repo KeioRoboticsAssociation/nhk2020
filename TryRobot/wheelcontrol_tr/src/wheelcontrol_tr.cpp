@@ -8,14 +8,15 @@ extern float theta_1, theta_2, theta_3, theta_4;
 extern float target_speed_1, target_speed_2, target_speed_3, target_speed_4;
 void wheel_control(float, float, float, float);
 
-float bno_theta = 0, joy_x = 0, joy_y = 0, omega = 0, delta_omega = 0;
+float bno_theta = 0, joy_x = 0, joy_y = 0, omega = 0;
+float joy_x_t = 0, joy_y_t = 0, omega_t = 0;
 float joy_xy = 0, old_joy_xy = 0, old_omega = 0;
 
 void msgCallback(const std_msgs::Float32MultiArray &msg)
 {
-    joy_x = msg.data[0] / 20;
-    joy_y = msg.data[1] / 20;
-    delta_omega = msg.data[2] / 200;
+    joy_x_t = msg.data[0];
+    joy_y_t = msg.data[1];
+    omega_t = msg.data[2];
 }
 
 int main(int argc, char **argv)
@@ -44,7 +45,9 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(looprate);
     while (ros::ok())
     {
-        omega += delta_omega / (float)looprate;
+        joy_x = joy_x_t / (float)looprate;
+        joy_y = joy_y_t / (float)looprate;
+        omega = omega_t / (float)looprate;
         if (omega > old_omega)
         {
             if (omega > old_omega + accel[1])
