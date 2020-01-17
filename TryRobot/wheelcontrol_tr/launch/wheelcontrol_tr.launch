@@ -8,6 +8,8 @@
 
   <node pkg="wheelcontrol_tr" name="wheelcontrol_tr" type="wheelcontrol_tr_node" output="screen">
     <param name = "rate" value = "frequency"/>
+    <param name = "accel_xy" value = "0.1"/>
+    <param name = "accel_theta" value = "0.1"/>
   </node>
 
 </launch>

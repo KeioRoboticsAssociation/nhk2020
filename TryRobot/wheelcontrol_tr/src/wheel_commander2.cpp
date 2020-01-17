@@ -1,6 +1,6 @@
 #include <math.h>
 
-#define BODY_WIDTH 440.0F // [mm]
+#define BODY_WIDTH 0.440F // [m]
 
 #define PI 3.141592F
 
@@ -88,16 +88,18 @@ void wheel_control(float theta_body, float vx, float vy, float w)
   for (int i = 0; i < 4; i++)
   {
     target_speed_temp[i] = sqrt(deltapos[i][0] * deltapos[i][0] + deltapos[i][1] * deltapos[i][1]);
-    if (theta_st_temp[i] > theta_st[i] + PI / 2.0f && theta_st_temp[i] < theta_st[i] + PI)
-    {
-      theta_st[i] = theta_st_temp[i];
-      theta_st_temp[i] += PI;
-      target_speed_temp[i] *= -1.0f;
-    }
-    else if (theta_st_temp[i] < theta_st[i] - PI / 2.0f && theta_st_temp[i] > theta_st[i] - PI)
+    //if ((theta_st_temp[i] > theta_st[i] + PI / 2.0f) && (theta_st_temp[i] <= theta_st[i] + PI))
+    if (theta_st_temp[i] > theta_st[i] + PI / 2.0f)
     {
       theta_st[i] = theta_st_temp[i];
       theta_st_temp[i] -= PI;
+      target_speed_temp[i] *= -1.0f;
+    }
+    //else if (theta_st_temp[i] < theta_st[i] - PI / 2.0f && theta_st_temp[i] >= theta_st[i] - PI)
+    else if (theta_st_temp[i] < theta_st[i] - PI / 2.0f)
+    {
+      theta_st[i] = theta_st_temp[i];
+      theta_st_temp[i] += PI;
       target_speed_temp[i] *= -1.0f;
     }
     else
@@ -105,7 +107,7 @@ void wheel_control(float theta_body, float vx, float vy, float w)
       theta_st[i] = theta_st_temp[i];
     }
   }
-  
+
   theta_1 = theta_st_temp[0] - theta_body;
   theta_2 = theta_st_temp[1] - theta_body;
   theta_3 = theta_st_temp[2] - theta_body;

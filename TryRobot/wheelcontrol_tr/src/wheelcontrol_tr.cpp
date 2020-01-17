@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 
     ros::NodeHandle arg_n("~");
     int looprate = 30;           // Hz
-    float accel[2] = {1.0, 1.0}; // [vel, omega]
+    float accel[2] = {0.1, 0.1}; // [vel, omega]
     arg_n.getParam("frequency", looprate);
     arg_n.getParam("accel_xy", accel[0]);
     arg_n.getParam("accel_theta", accel[1]);
@@ -63,6 +63,7 @@ int main(int argc, char **argv)
         joy_xy = sqrt(joy_x * joy_x + joy_y * joy_y);
         if (joy_xy < 1e-8)
         {
+            joy_xy = 0;
             joy_x = 0;
             joy_y = 0;
         }
@@ -85,23 +86,23 @@ int main(int argc, char **argv)
         old_joy_xy = joy_xy;
 
         wheel_control(bno_theta, joy_x, joy_y, omega);
-        bno_theta += omega;///////////////////////////////
+        //bno_theta += omega;///////////////////////////////
 
         std_msgs::Float32MultiArray floatarray;
         floatarray.data.resize(2);
-        floatarray.data[0] = target_speed_1;
+        floatarray.data[0] = target_speed_1 * (float)looprate;
         floatarray.data[1] = theta_1;
         pub_RF.publish(floatarray);
 
-        floatarray.data[0] = target_speed_2;
+        floatarray.data[0] = target_speed_2 * (float)looprate;
         floatarray.data[1] = theta_2;
         pub_LF.publish(floatarray);
 
-        floatarray.data[0] = target_speed_3;
+        floatarray.data[0] = target_speed_3 * (float)looprate;
         floatarray.data[1] = theta_3;
         pub_LB.publish(floatarray);
 
-        floatarray.data[0] = target_speed_4;
+        floatarray.data[0] = target_speed_4 * (float)looprate;
         floatarray.data[1] = theta_4;
         pub_RB.publish(floatarray);
 
