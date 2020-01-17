@@ -12,11 +12,23 @@ float bno_theta = 0, joy_x = 0, joy_y = 0, omega = 0;
 float joy_x_t = 0, joy_y_t = 0, omega_t = 0;
 float joy_xy = 0, old_joy_xy = 0, old_omega = 0;
 
-void msgCallback(const std_msgs::Float32MultiArray &msg)
+int flag = 0;
+
+void joyCallback(const std_msgs::Float32MultiArray &msg)
 {
     joy_x_t = msg.data[0];
     joy_y_t = msg.data[1];
     omega_t = msg.data[2];
+}
+
+void bnoCallback(const std_msgs::Float32MultiArray &msg)
+{
+    bno_theta = msg.data[0];
+}
+
+void flagCalback(const std_msgs::Int32 &msg)
+{
+    flag = msg.data;
 }
 
 int main(int argc, char **argv)
@@ -28,9 +40,10 @@ int main(int argc, char **argv)
     ros::Publisher pub_LF = n.advertise<std_msgs::Float32MultiArray>("control_LF", 10);
     ros::Publisher pub_LB = n.advertise<std_msgs::Float32MultiArray>("control_LB", 10);
     ros::Publisher pub_RB = n.advertise<std_msgs::Float32MultiArray>("control_RB", 10);
-    //ros::Publisher multiint_pub = n.advertise<std_msgs::Int32MultiArray>("Serial_sub_int", 10);
 
-    ros::Subscriber joy_sub = n.subscribe("control_float", 100, msgCallback);
+    ros::Subscriber joy_sub = n.subscribe("control_float", 100, joyCallback);
+    ros::Subscriber bno_sub = n.subscribe("bno_float", 100, bnoCallback);
+    ros::Subscriber flag_sub = n.subscribe("flag_int", 100, flagCallback);
 
     ros::NodeHandle arg_n("~");
     int looprate = 30;           // Hz
@@ -86,7 +99,6 @@ int main(int argc, char **argv)
         old_joy_xy = joy_xy;
 
         wheel_control(bno_theta, joy_x, joy_y, omega);
-        //bno_theta += omega;///////////////////////////////
 
         std_msgs::Float32MultiArray floatarray;
         floatarray.data.resize(2);

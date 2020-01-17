@@ -10,7 +10,8 @@
 float joystick_R[6] = {0};
 int button[12] = {0};
 float omega = 0.0;
-int reset = 0;
+int flag = 0; // 1:stop, 2:reset, 3:enable
+int mode = 0; // 1:kick
 
 void msgCallback(const sensor_msgs::Joy &msg)
 {
@@ -20,15 +21,29 @@ void msgCallback(const sensor_msgs::Joy &msg)
     {
         button[i] = msg.buttons[i];
     }
-    if (button[4] == 1 && button[5] == 0)
+    if (button[4] > button[5])
         omega = 1.0;
-    else if (button[4] == 0 && button[5] == 1)
+    else if (button[4] < button[5])
         omega = -1.0;
     else
         omega = 0;
-    
-    if(button[12] == 1){
-        reset = 1;
+
+    // flag
+    if (button[12] == 1) // stop
+        flag = 1;
+    else if (flag == 0)
+    {
+        if (button[11] == 1) // reset
+            flag = 2;
+        else if (button[10] == 1) // enable
+            flag = 3;
+    }
+
+    // mode
+    if (mode == 0)
+    {
+        if (button[9] == 1)
+            mode = 1;
     }
 }
 
@@ -37,9 +52,9 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "joystick_tr_node");
 
     ros::NodeHandle n;
-    ros::Publisher multifloat_pub = n.advertise<std_msgs::Float32MultiArray>("control_float", 10);
-    ros::Publisher multiint_pub = n.advertise<std_msgs::Int32MultiArray>("control_int", 10);
-    ros::Publisher resetint_pub = n.advertise<std_msgs::Int32>("Reset", 10);
+    ros::Publisher control_float_pub = n.advertise<std_msgs::Float32MultiArray>("control_float", 10);
+    ros::Publisher flag_mbed_pub = n.advertise<std_msgs::Int32MultiArray>("flag_mbed", 10);
+    ros::Publisher flag_int_pub = n.advertise<std_msgs::Int32>("flag_int", 10);
 
     ros::Subscriber joy_sub = n.subscribe("joy", 100, msgCallback);
 
@@ -48,6 +63,10 @@ int main(int argc, char **argv)
     arg_n.getParam("loop", looprate);
 
     ros::Rate loop_rate(looprate);
+
+    int flagcount = 0;
+    int modecount = 0;
+
     while (ros::ok())
     {
         std_msgs::Float32MultiArray floatarray;
@@ -55,21 +74,44 @@ int main(int argc, char **argv)
         floatarray.data[0] = joystick_R[0];
         floatarray.data[1] = joystick_R[1];
         floatarray.data[2] = omega;
-        multifloat_pub.publish(floatarray);
+        control_float_pub.publish(floatarray);
 
-        std_msgs::Int32MultiArray intarray;
-        intarray.data.resize(12);
-        for (int i = 0; i < 12; i++)
+        // flag
+        if (flag != 0)
         {
-            intarray.data[i] = button[i];
+            if (flagcount < looprate / 2)
+                flagcount++;
+            else
+            {
+                flagcount = 0;
+                flag = 0;
+            }
+            std_msgs::Int32 intflag;
+            intflag.data = flag;
+            flag_int_pub.publish(intflag);
+
+            std_msgs::Int32MultiArray intarray;
+            intarray.data.resize(2);
+            intarray.data[0] = flag;
+            intarray.data[1] = mode;
+            flag_mbed_pub.publish(intarray);
         }
-        multiint_pub.publish(intarray);
-
-        std_msgs::Int32 reset_int;
-        if (reset != 0)
+        
+        // mode
+        else if (mode != 0)
         {
-            reset_int.data = reset;
-            resetint_pub.publish(reset_int);
+            if (modecount < looprate / 2)
+                modecount++;
+            else
+            {
+                modecount = 0;
+                mode = 0;
+            }
+            std_msgs::Int32MultiArray intarray;
+            intarray.data.resize(2);
+            intarray.data[0] = flag;
+            intarray.data[1] = mode;
+            flag_mbed_pub.publish(intarray);
         }
 
         ros::spinOnce();
