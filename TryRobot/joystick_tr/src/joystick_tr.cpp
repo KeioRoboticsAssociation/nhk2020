@@ -10,8 +10,8 @@
 float joystick_R[6] = {0};
 int button[12] = {0};
 float omega = 0.0;
-int flag = 0; // 1:stop, 2:reset, 3:enable
-int mode = 0; // 1:kick
+int flag = 0; // 0:not publish, 1:stop, 2:reset, 3:enable
+int mode = 0; // 0:other, 1:catch, 2:try, 3:kick
 
 void msgCallback(const sensor_msgs::Joy &msg)
 {
@@ -79,13 +79,6 @@ int main(int argc, char **argv)
         // flag
         if (flag != 0)
         {
-            if (flagcount < looprate / 2)
-                flagcount++;
-            else
-            {
-                flagcount = 0;
-                flag = 0;
-            }
             std_msgs::Int32 intflag;
             intflag.data = flag;
             flag_int_pub.publish(intflag);
@@ -95,6 +88,14 @@ int main(int argc, char **argv)
             intarray.data[0] = flag;
             intarray.data[1] = mode;
             flag_mbed_pub.publish(intarray);
+
+            if (flagcount < looprate / 2)
+                flagcount++;
+            else
+            {
+                flagcount = 0;
+                flag = 0;
+            }
         }
         
         // mode
