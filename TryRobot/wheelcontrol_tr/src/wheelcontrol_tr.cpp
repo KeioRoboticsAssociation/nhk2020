@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/Int32MultiArray.h"
+#include "std_msgs/Int32.h"
 
 #include "sensor_msgs/Joy.h"
 
@@ -23,10 +24,10 @@ void joyCallback(const std_msgs::Float32MultiArray &msg)
 
 void bnoCallback(const std_msgs::Float32MultiArray &msg)
 {
-    bno_theta = msg.data[0];
+    ;//bno_theta = msg.data[0];
 }
 
-void flagCalback(const std_msgs::Int32 &msg)
+void flagCallback(const std_msgs::Int32 &msg)
 {
     flag = msg.data;
 }
@@ -58,8 +59,8 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(looprate);
     while (ros::ok())
     {
-        joy_x = joy_x_t * 3.0f / (float)looprate;
-        joy_y = joy_y_t * 3.0f / (float)looprate;
+        joy_x = joy_x_t * 1.0f / (float)looprate;
+        joy_y = joy_y_t * 1.0f / (float)looprate;
         omega = omega_t * 3.0f / (float)looprate;
         if (omega > old_omega)
         {

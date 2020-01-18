@@ -52,7 +52,7 @@
 
   <!--arm-->
   <node pkg="serial_test" name="mbed_RF" type="serial_test_node" output="screen">
-    <param name = "port" value = "/dev/serial/by-id/usb-STMicroelectronics_STM32_STLink_066EFF495649657867251947-if02"/>
+    <param name = "port" value = "/dev/serial/by-id/usb-STMicroelectronics_STM32_STLink_066EFF555054877567044940-if02"/>
     <remap from = "/Serial_pub_float" to = "/bno_float" />
     <remap from = "/Serial_sub_int" to = "flag_mbed" />
   </node>

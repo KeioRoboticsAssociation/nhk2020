@@ -29,20 +29,20 @@ void msgCallback(const sensor_msgs::Joy &msg)
         omega = 0;
 
     // flag
-    if (button[12] == 1) // stop
+    if (button[11] == 1) // stop
         flag = 1;
     else if (flag == 0)
     {
-        if (button[11] == 1) // reset
+        if (button[10] == 1) // reset
             flag = 2;
-        else if (button[10] == 1) // enable
+        else if (button[9] == 1) // enable
             flag = 3;
     }
 
     // mode
     if (mode == 0)
     {
-        if (button[9] == 1)
+        if (button[0] == 1)
             mode = 1;
     }
 }

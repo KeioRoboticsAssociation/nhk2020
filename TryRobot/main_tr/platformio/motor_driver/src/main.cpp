@@ -26,16 +26,15 @@ Serial pc(USBTX, USBRX, 115200);
 Ticker ticker;
 #define SUMPLING_TIME_US 10000 //タイマー割り込み周期 kHzオーダーつまり1000が理想
 
-Mbedserial Ms(pc);/////////////////////////////////
+Mbedserial Ms(pc); /////////////////////////////////
 
 DigitalIn SW1(PB_7);
 DigitalIn SW2(PB_6);
 DigitalOut LED(LED3);
-//InterruptIn switch1(USER_BUTTON); //青ボタン //後で消す
 DigitalOut OE(PF_1, 0); // レベルシフタを有効化
 
 //----------------------------------------Motor---------------------------------------------------
-#define STYLE_RF //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
+#define STYLE_RB //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
 
 #ifdef STYLE_RF
 //MotorA
@@ -44,9 +43,12 @@ Motor Wheel(PB_5, PA_10, PA_11_ALT0); //EN_GD, PWM_p, PWM_n
 #define ENB_W PA_9
 //MotorB
 Motor Table(PB_4, PB_0_ALT0, PB_1_ALT0); //EN_GD, PWM_p, PWM_n
+
 #define ENA_T PA_7
 #define ENB_T PA_6
 #define EN_Z PA_5
+
+#define INITSTEP -50
 #endif
 
 #ifdef STYLE_LF
@@ -59,6 +61,8 @@ Motor Table(PB_4, PB_1_ALT0, PB_0_ALT0); //EN_GD, PWM_p, PWM_n
 #define ENA_T PA_7
 #define ENB_T PA_6
 #define EN_Z PA_5
+
+#define INITSTEP -280
 #endif
 
 #ifdef STYLE_LB
@@ -71,6 +75,8 @@ Motor Table(PB_4, PB_1_ALT0, PB_0_ALT0); //EN_GD, PWM_p, PWM_n
 #define ENA_T PA_7
 #define ENB_T PA_6
 #define EN_Z PA_5
+
+#define INITSTEP -50
 #endif
 
 #ifdef STYLE_RB
@@ -83,16 +89,19 @@ Motor Table(PB_4, PB_1_ALT0, PB_0_ALT0); //EN_GD, PWM_p, PWM_n
 #define ENA_T PA_7
 #define ENB_T PA_6
 #define EN_Z PA_5
-#endif
 
+#define INITSTEP -50
+#endif
 
 #define MAX_WHEEL_SPEED 6000 //ジョイスティック入力での最高速度(°/s)
 #define MAX_TABLE_SPEED 2000 //ジョイスティック入力での最高速度(°/s)
-
+/*
 float target_angle = 0; //目標角(エンコーダーの値)
 float target_speed = 0; //目標角速度.1秒間に進む角
 float table_speed = 0;
 float wheel_speed = 0;
+*/
+//リセット時の暴走を防ぐため後で初期化する
 
 //------------------------------------------------------------------------------------------------
 
@@ -112,7 +121,23 @@ float en_count_w = 0;     //現在の角度
 float old_en_count_w = 0; //過去の角度(一定周期でタイマー割り込みがなされる)
 float d_en_count_w = 0;   //角度の差分
 
+#ifdef STYLE_LB
+bool initflag = true;
+#endif
+
+#ifdef STYLE_RB
+bool initflag = true;
+#endif
+
+#ifdef STYLE_RF
 bool initflag = false; //Z相による初期化が済んでいるか否か
+#endif
+
+#ifdef STYLE_LF
+bool initflag = false; //Z相による初期化が済んでいるか否か
+#endif
+
+bool ROSflag = false; //ROSのターマー割り込みを許可するか
 //------------------------------------------------------------------------------------------------
 
 //------------------------------------------PID-----------------------------------------------------
@@ -128,8 +153,13 @@ int Delta_T = SUMPLING_TIME_US; //周期
 #define I_SET_t 50
 #define I_SET_w 50
 #define D_SET_t 50
-#define D_SET_w 50
+#define D_SET_w 3600
 //--------------------------------------------------------------------------------------------------
+
+float target_angle = 0; //目標角(エンコーダーの値)
+float target_speed = 0; //目標角速度.1秒間に進む角
+float table_speed = 0;
+float wheel_speed = 0;
 
 //プロトタイプ宣言
 void init();
@@ -154,40 +184,11 @@ void setter(float &value, float set);
 float transform_gear_into_encoder(float a, int b);
 float transform_encoder_into_gear(float a, int b);
 
-int main(void)
-{
-  init();
-
-  //while (switch1);
-  while (1)
-  {
-    if (SW1.read() == 1)
-      break;
-  }
-
-  //回路についてあるデップスイッチ1を押すと次に進む
-  //test();
-  init_PID(); //testの前にこれやると割り込みが発生してPID以外では回らなくなってしまう
-
-  //ROSからの受付部分　testがうまく行ったら実行
-  while (1) //今は無限ループでやっているが実際はROSから送られてくる周期と同じ周期でタイマー割り込みするとか?
-  {
-    //move_table(Ms.getfloat[1]*180/M_PI); //ROSから目標角を受け付ける//radから°に変換
-    //move_wheel(Ms.getfloat[0]); //ROSから目標角を受け付ける//値適当、後でやる
-    //if (!SW1)//回路についてあるデップスイッチ
-    //  break;
-    if(!SW1)
-      break;
-  }
-  //
-}
-
 void init()
 {
   init_motor();
   init_encoder();
-  //init_wheel_pos(); z相で車輪の位置初期化
-  //init_PID();
+  init_PID(); //ここに置くと暴走しない
 }
 
 void init_motor()
@@ -220,8 +221,52 @@ void init_PID()
   target_angle = 0; //目標角
   target_speed = 0; //目標角速度.1秒間に進む角
 
-  set_PID_t(3, 3, 0.3); //比例定数の設定
-  set_PID_w(0.001, 0, 0);  //比例定数の設定
+  set_PID_t(10.0F, 10.0F, 1.0F); //比例定数の設定
+  set_PID_w(0.2F, 0.1F, 0.001F); //比例定数の設定
+}
+
+int main(void)
+{
+  init();
+  //SW1押されるまで待機
+  while (1)
+  {
+    if (SW1.read() == 1)
+    {
+      //pc.printf("a\n");
+      break;
+    }
+  }
+
+  init_wheel_pos(); //z相で車輪の位置初期化
+  wait_us(100000);
+
+  //SW1押されるまで待機
+  while (1)
+  {
+    if (SW1.read() == 1)
+    {
+      break;
+    }
+  }
+
+  //回路についてあるデップスイッチ1を押すと次に進む
+  //test();//PID_initしたらこれはやってはいけない
+  //init_PID(); //testの前にこれやると割り込みが発生してPID以外では回らなくなってしまう//ここでやると暴走する。init内でやると暴走しない
+  //test_PID();
+
+  //ROSからの受付部分　testがうまく行ったら実行
+  //ROSflag=true;とするとROSの割り込みが開始する
+  ROSflag = true;
+  while (1) //今は無限ループでやっているが実際はROSから送られてくる周期と同じ周期でタイマー割り込みするとか?
+  {
+    //move_table(Ms.getfloat[1]*180/M_PI); //ROSから目標角を受け付ける//radから°に変換
+    //move_wheel(Ms.getfloat[0]); //ROSから目標角を受け付ける//値適当、後でやる
+    if (!SW1)
+      break; //回路についてあるデップスイッチ
+  }
+
+  //
 }
 
 void encoder_t(void)
@@ -230,15 +275,17 @@ void encoder_t(void)
     en_count_t += 1;
   else
     en_count_t -= 1;
+
+  //if(!initflag) pc.printf("en_count_t : %d\n",en_count_t);
   //pc.printf("Angle_t:%d\n", en_count_t);
 }
 
 void encoder_w(void) //特性確認
 {
   if (enB_w == 1)
-    en_count_w += 7.5F;
+    en_count_w += 7.5F; //7.5
   else
-    en_count_w -= 7.5F;
+    en_count_w -= 7.5F; //7.5F
   //pc.printf("Angle_w:%d\n", (int)en_count_w);
 }
 
@@ -246,56 +293,87 @@ void init_wheel_pos_by_z(void)
 {
   if (!initflag)
   {
-    en_count_t = 0; //現在の角度
-    Table.setSpeed(0.0F);
+    en_count_t = INITSTEP; //現在の角度
+    Table.setSpeed(0);
+    //pc.printf("Z_demension was found\n");
     initflag = true;
+    /*
+    wait_us(500000);
+    Table.setSpeed(0.2F);
+    while (en_count_t != (int)transform_gear_into_encoder(-280, 1));
+    Table.setSpeed(0);
+    test();
+    */
   }
 }
 
 void init_wheel_pos()
 {
+  if (initflag)
+    return;
+  en_count_t = 0;
   Table.setSpeed(0.2F);
-  while (en_count_t != -180) //符号注意
+  wait_us(500000);
+  if (initflag)
   {
-    if (initflag)
-      return;
+    //pc.printf("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n");
+    return;
   }
-  Table.setSpeed(0.0F);
+  Table.setSpeed(0);
+  en_count_t = 0;
   wait_us(100000);
   Table.setSpeed(-0.2F);
-  while (en_count_t != 180)
-  {
-    if (initflag)
-      return;
-  }
-  Table.setSpeed(0.0F);
+  wait_us(1000000);
+  if (initflag)
+    return;
+  Table.setSpeed(0);
+  en_count_t = 0;
   return;
 }
 
 void test(void)
 {
-  Table.setSpeed(0.2F);
-  wait(1);
-  Table.setSpeed(0);
-  wait(3);
-  Wheel.setSpeed(0.1F);
-  wait(3);
+  Wheel.setSpeed(0.2F);
+  wait_us(1000000);
   Wheel.setSpeed(0);
-  wait(3);
+  /*
+  Table.setSpeed(0.2F);
+  wait_us(10000000);
+  pc.printf("a");
+  Table.setSpeed(0);
+  wait_us(1000000);
+  Wheel.setSpeed(0.2F);
+  wait_us(1000000);
 
   Table.setSpeed(-0.2F);
-  wait(1);
+  wait_us(1000000);
   Table.setSpeed(0);
-  wait(3);
-  Wheel.setSpeed(-0.1F);
-  wait(3);
   Wheel.setSpeed(0);
-  wait(100);
+  wait_us(1000000);
+  Wheel.setSpeed(-0.2F);
+  wait_us(3000000);
+  Wheel.setSpeed(0);
+  */
 }
 
 void test_PID(void)
 {
-  move_table(90);
+  /*
+  move_table(180);
+  wait_us(3000000);
+  move_table(0);
+  */
+  /*
+  move_wheel(720);
+  wait_us(3000000);
+  move_wheel(360);
+  wait_us(4000000);
+  move_wheel(-360);
+  wait_us(4000000);
+  move_wheel(0);
+  */
+
+  move_table(180);
   move_wheel(360);
   wait_us(3000000);
   move_table(0);
@@ -304,11 +382,9 @@ void test_PID(void)
   wait_us(3000000);
   move_wheel(0);
   wait_us(1000000);
-  move_table(-45);
+  move_table(-90);
   wait_us(1000000);
-  move_table(0);
-  wait_us(1000000);
-  move_table(-45);
+  move_table(-180);
   wait_us(1000000);
   move_table(0);
   wait_us(1000000);
@@ -316,13 +392,29 @@ void test_PID(void)
 
 void Timer_interrupt()
 {
-  speed_calc_w(); //車輪の速度計測
-  PID_t();
-  PID_w();
-  if (!SW1) //回路についてあるデップスイッチ
-    return;
-  move_table(Ms.getfloat[1]*180/3.141592); //ROSから目標角を受け付ける//radから°に変換
-  move_wheel(Ms.getfloat[0]); //ROSから目標角を受け付ける//値適当、後でやる
+  LED = 1;
+  if (!initflag)
+    ;
+  else
+  {
+    speed_calc_w(); //車輪の速度計測
+    PID_t();
+    PID_w();
+  }
+
+  if (!SW1)
+    return; //回路についてあるデップスイッチ
+
+  //ROSはいったんオフ
+  if (!ROSflag)
+    ;
+  else
+  {
+    if (!SW1)
+      return;
+    move_table(Ms.getfloat[1] * 180 / 3.141592); //ROSから目標角を受け付ける//radから°に変換
+    move_wheel(Ms.getfloat[0] * 180 * 1000 / 35 / 3.141592);
+  } //ROSから目標角を受け付ける//値適当、後でやる
 }
 
 void move_table(float _target_angle)
@@ -357,7 +449,7 @@ void PID_t(void)
   static float I = 0;
   I += (diff_t[1] + diff_t[0]) / 2.0f * (SUMPLING_TIME_US / 1000000.0F);
   static float D = 0;
-  D = (diff_t[0] - diff_t[1]) / (SUMPLING_TIME_US / 1000000.0F);
+  D = (diff_t[1] - diff_t[0]) / (SUMPLING_TIME_US / 1000000.0F);
   float I_value = Ki_t * I;
   float D_value = Kd_t * D;
   setter(I_value, I_SET_t);
@@ -365,12 +457,13 @@ void PID_t(void)
   delta_v = Kp_t * P + I_value + D_value;
   v_t = transform_encoder_into_gear(delta_v, 1); //エンコーダーの差分から回転テーブルの差分に変換する
   table_speed = v_t / MAX_TABLE_SPEED;           //-1~1のfloat値に変換(abs0.9以上 or abs0.02未満の場合はBrakeになるが)
-  if (table_speed > 0.87)
-    table_speed = 0.87;
-  else if (table_speed < -0.87)
-    table_speed = -0.87;
+  if (table_speed >= 0.88)
+    table_speed = 0.88;
+  else if (table_speed <= -0.88)
+    table_speed = -0.88;
   Table.setSpeed(table_speed);
-  //pc.printf("%d\n", (int)(table_speed * 10));
+  //pc.printf("%d\n", (int)(table_speed * 1000));
+  //pc.printf("%d\n", (int)(diff_t[1]*100));
 }
 
 void PID_w(void)
@@ -383,25 +476,27 @@ void PID_w(void)
   float P = diff_w[1];
   static float I = 0;
   I += (diff_w[1] + diff_w[0]) / 2.0f * (SUMPLING_TIME_US / 1000000.0F);
+  if (target_speed == 0)
+    I = 0;
   static float D = 0;
-  D = (diff_w[0] - diff_w[1]) / (SUMPLING_TIME_US / 1000000.0F);
+  D = (diff_w[1] - diff_w[0]) / (SUMPLING_TIME_US / 1000000.0F);
   float I_value = Ki_w * I;
   float D_value = Kd_w * D;
   setter(I_value, I_SET_w);
   setter(D_value, D_SET_w);
-  delta_v = Kp_t * P + I_value + D_value;
+  delta_v = Kp_w * P + I_value + D_value;
   v_w += transform_encoder_into_gear(delta_v, 0); //エンコーダーの差分から車輪の差分に変換し、足す
   setter(v_w, 0.88F * MAX_WHEEL_SPEED);
   wheel_speed = v_w / MAX_WHEEL_SPEED; //-1~1のfloat値に変換(abs0.9以上 or abs0.02未満の場合はBrakeになるが)
-  
   // とりあえずエンコーダは読まないでduty比を入力
-  wheel_speed = target_speed * 0.1;
-  if (wheel_speed > 0.87)
-    wheel_speed = 0.87;
-  else if (wheel_speed < -0.87)
-    wheel_speed = -0.87;
+  //wheel_speed = target_speed * 0.1F;ここでPIDをあきらめてる
+  if (wheel_speed >= 0.88)
+    wheel_speed = 0.88F;
+  else if (wheel_speed <= -0.88)
+    wheel_speed = -0.88F;
   Wheel.setSpeed(wheel_speed);
-  //pc.printf("%d\n", (int)(wheel_speed * 10));
+  //pc.printf("%d\n", (int)(wheel_speed * 100)); //割る100するとwheel_speedが得られる
+  //pc.printf("%f\n", wheel_speed);
 }
 
 void set_PID_t(float _Kp, float _Ki, float _Kd)
