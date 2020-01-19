@@ -1,7 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/Int32MultiArray.h"
-#include "std_msgs/Int32.h"
 
 #include "sensor_msgs/Joy.h"
 
@@ -14,6 +13,7 @@ float joy_x_t = 0, joy_y_t = 0, omega_t = 0;
 float joy_xy = 0, old_joy_xy = 0, old_omega = 0;
 
 int flag = 0;
+int mode = 0;
 
 void joyCallback(const std_msgs::Float32MultiArray &msg)
 {
@@ -27,9 +27,10 @@ void bnoCallback(const std_msgs::Float32MultiArray &msg)
     ;//bno_theta = msg.data[0];
 }
 
-void flagCallback(const std_msgs::Int32 &msg)
+void armCallback(const std_msgs::Int32MultiArray &msg)
 {
-    flag = msg.data;
+    flag = msg.data[0];
+    mode = msg.data[1];
 }
 
 int main(int argc, char **argv)
@@ -44,7 +45,7 @@ int main(int argc, char **argv)
 
     ros::Subscriber joy_sub = n.subscribe("control_float", 100, joyCallback);
     ros::Subscriber bno_sub = n.subscribe("bno_float", 100, bnoCallback);
-    ros::Subscriber flag_sub = n.subscribe("flag_int", 100, flagCallback);
+    ros::Subscriber flag_sub = n.subscribe("arm_mbed", 100, armCallback);
 
     ros::NodeHandle arg_n("~");
     int looprate = 30;           // Hz

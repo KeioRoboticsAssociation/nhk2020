@@ -14,7 +14,6 @@ float bno_old = 0.0f;    // (rad)
 float bno_angle = 0.0f;  // old - offset (rad)
 
 float timecount = 0;
-bool timecountflag = false;
 /*******************************************************/
 
 Serial pc(USBTX, USBRX, 115200);
@@ -37,10 +36,15 @@ void get_angle();
 void try_motor(float);
 void kickandhold(int);
 void timer_interrupt();
-int waittime_ms(float);
+void waittime_ms(float);
 
-bool kickable = true;
+int replyflag = 1;
+bool modezeroflag = false;
 /******************************************************/
+
+// subscribe_int: flag, mode, try_motor
+// publish_float: bno
+// publish_int: reply
 
 int main()
 {
@@ -52,45 +56,48 @@ int main()
 
   while (1)
   {
-    switch (Ms.getint[0])
+    switch (Ms.getint[0]) // flag
     {
-    case 1:
+    case 1: // stop
       try_motor(0);
       break;
-    case 2:
+    case 2: // reset
       set_offset();
-      kickandhold(0);
-      kickable = true;
       break;
     default:
-      switch (Ms.getint[1])
+      switch (Ms.getint[1]) // mode
       {
+      case 0: //others
+        modezeroflag = true;
+        break;
       case 1:
-        try_motor(TRY_MOTOR_DUTY);
-        kickable = true;
-        break;
       case 2:
-        try_motor(-TRY_MOTOR_DUTY);
-        kickable = true;
-        break;
-      case 3:
-        if (kickable)
-        {
-          if (waittime_ms(2.0f) == 0)
-            kickandhold(1);
-          else{
-            kickandhold(0);
-            kickable = false;
-            }
+        if (modezeroflag)
           break;
-        }
-      default:
-        kickable = true;
-        try_motor(0);
+        modezeroflag = false;
+        replyflag = 0;
+        waittime_ms(500);
+        replyflag = 1;
+        break;
+      case 3: // kick
+        if (modezeroflag)
+          break;
+        modezeroflag = false;
+        replyflag = 0;
+        waittime_ms(500);
+        kickandhold(0);
+        replyflag = 1;
+        break;
       }
+      // try_motor
+      if (Ms.getint[2] == 1)
+        try_motor(TRY_MOTOR_DUTY);
+      else if (Ms.getint[2] == -1)
+        try_motor(-TRY_MOTOR_DUTY);
+      else
+        try_motor(0);
     }
-    get_angle();
-    wait(0.01);
+    waittime_ms(100);
   }
 }
 
@@ -153,34 +160,36 @@ void try_motor(float duty_)
   }
 }
 
-void kickandhold(int flag_)
+void kickandhold(int stop_)
 {
-  if (flag_ > 0)
-  {
-    kick1 = 1;
-    wait_ms(KICK_WAIT_TIME_MS);
-    kick2 = 1;
-  }
-  else
-  {
-    kick1 = 0;
-    kick2 = 0;
-  }
+  kick1 = 1;
+  waittime_ms(KICK_WAIT_TIME_MS);
+
+  kick2 = 1;
+
+  waittime_ms(1000);
+  kick1 = 0;
+  kick2 = 0;
 }
 void timer_interrupt()
 {
-  Ms.float_write(&bno_angle, 1);
+  static bool writeflag = true;
+  if (writeflag)
+    Ms.float_write(&bno_angle, 1);
+  else
+    Ms.int_write(&replyflag, 1);
+  writeflag = !writeflag;
+
   timecount += (float)SUMPLING_TIME_US / 1000.0f;
 }
 
-int waittime_ms(float t)
+void waittime_ms(float t)
 {
-  timecountflag = true;
-  if (timecount > t)
+  timecount = 0;
+  while (timecount < t)
   {
-    timecountflag = false;
-    timecount = 0;
-    return 1;
+    get_angle();
+    wait_ms(10);
   }
-  return 0;
+  timecount = 0;
 }

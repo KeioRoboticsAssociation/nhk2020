@@ -8,42 +8,73 @@
 #define PI 3.141592f
 
 float joystick_R[6] = {0};
-int button[12] = {0};
 float omega = 0.0;
-int flag = 0; // 0:not publish, 1:stop, 2:reset, 3:enable
-int mode = 0; // 0:other, 1:catch, 2:try, 3:kick
+int flag = 0;      // 0:not publish, 1:stop, 2:reset, 3:enable
+                   // (1->button->3, 2->while->0, 3->while->0)
+int mode = 0;      // 0:other, 1:catch, 2:try, 3:kick
+                   // send arm mbed (mbedreply->0)
+int try_motor = 0; // 0:none, 1:push, -1:pull
 
 void msgCallback(const sensor_msgs::Joy &msg)
 {
     joystick_R[0] = -msg.axes[2];
     joystick_R[1] = msg.axes[3];
-    for (int i = 0; i < 12; i++)
-    {
-        button[i] = msg.buttons[i];
-    }
-    if (button[4] > button[5])
+
+    if (msg.buttons[4] > msg.buttons[5])
         omega = 1.0;
-    else if (button[4] < button[5])
+    else if (msg.buttons[4] < msg.buttons[5])
         omega = -1.0;
     else
         omega = 0;
 
+    // try_motor
+    if (msg.buttons[6] > msg.buttons[7])
+        try_motor = 1;
+    else if (msg.buttons[6] < msg.buttons[7])
+        try_motor = -1;
+    else
+        try_motor = 0;
+
     // flag
-    if (button[11] == 1) // stop
+    if (msg.buttons[11] == 1) // stop
         flag = 1;
-    else if (flag == 0)
+    if (flag == 1 && msg.buttons[9] == 1) // enable
+        flag = 3;
+    if (flag == 0)
     {
-        if (button[10] == 1) // reset
+        if (msg.buttons[10] == 1) // reset
             flag = 2;
-        else if (button[9] == 1) // enable
-            flag = 3;
     }
 
     // mode
-    if (mode == 0)
+    if (mode == 0) // others
     {
-        if (button[0] == 1)
+        if (msg.buttons[0] == 1) // catch
             mode = 1;
+        else if (msg.buttons[1] == 1) // try
+            mode = 2;
+        else if (msg.buttons[2] == 1) // kick
+            mode = 3;
+    }
+}
+
+void armCallback(const std_msgs::Int32MultiArray &msg)
+{
+    // flag_reply
+    // 0:not yet, 1:finished
+    static bool mode0flag = true;
+    if (moe0flag)
+    {
+        if (msg.data[0] == 1)
+        {
+            mode = 0;
+            mode0flag = false;
+        }
+    }
+    else
+    {
+        if (msg.data[0] == 0)
+            mode0flag = true;
     }
 }
 
@@ -52,11 +83,13 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "joystick_tr_node");
 
     ros::NodeHandle n;
-    ros::Publisher control_float_pub = n.advertise<std_msgs::Float32MultiArray>("control_float", 10);
-    ros::Publisher flag_mbed_pub = n.advertise<std_msgs::Int32MultiArray>("flag_mbed", 10);
-    ros::Publisher flag_int_pub = n.advertise<std_msgs::Int32>("flag_int", 10);
+    ros::Publisher control_float_pub = n.advertise<std_msgs::Float32MultiArray>("control_float", 10); // joystick
+    ros::Publisher leg_mbed_pub = n.advertise<std_msgs::Int32MultiArray>("leg_mbed", 10);             // leg mbed(flag)
+    ros::Publisher arm_mbed_pub = n.advertise<std_msgs::Int32MultiArray>("arm_mbed", 10);             // leg mbed(flag, mode)
+    //ros::Publisher flag_int_pub = n.advertise<std_msgs::Int32>("flag_int", 10);
 
     ros::Subscriber joy_sub = n.subscribe("joy", 100, msgCallback);
+    ros::Subscriber arm_sub = n.subscribe("arm_mbed_reply", 100, armCallback);
 
     ros::NodeHandle arg_n("~");
     int looprate = 30; // Hz
@@ -65,7 +98,6 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(looprate);
 
     int flagcount = 0;
-    int modecount = 0;
 
     while (ros::ok())
     {
@@ -79,41 +111,30 @@ int main(int argc, char **argv)
         // flag
         if (flag != 0)
         {
-            std_msgs::Int32 intflag;
-            intflag.data = flag;
-            flag_int_pub.publish(intflag);
+            std_msgs::Int32MultiArray intarray_leg;
+            intarray_leg.data.resize(1);
+            intarray_leg.data[0] = flag;
+            leg_mbed_pub.publish(intarray_leg);
 
-            std_msgs::Int32MultiArray intarray;
-            intarray.data.resize(2);
-            intarray.data[0] = flag;
-            intarray.data[1] = mode;
-            flag_mbed_pub.publish(intarray);
-
-            if (flagcount < looprate / 2)
-                flagcount++;
-            else
+            if (flag == 2 || flag == 3)
             {
-                flagcount = 0;
-                flag = 0;
+                if (flagcount < looprate / 2)
+                    flagcount++;
+                else
+                {
+                    flagcount = 0;
+                    flag = 0;
+                }
             }
         }
-        
+
         // mode
-        else if (mode != 0)
-        {
-            if (modecount < looprate / 2)
-                modecount++;
-            else
-            {
-                modecount = 0;
-                mode = 0;
-            }
-            std_msgs::Int32MultiArray intarray;
-            intarray.data.resize(2);
-            intarray.data[0] = flag;
-            intarray.data[1] = mode;
-            flag_mbed_pub.publish(intarray);
-        }
+        std_msgs::Int32MultiArray intarray_arm;
+        intarray_arm.data.resize(3);
+        intarray_arm.data[0] = flag;
+        intarray_arm.data[1] = mode;
+        intarray_arm.data[2] = try_motor;
+        arm_mbed_pub.publish(intarray_arm);
 
         ros::spinOnce();
         loop_rate.sleep();

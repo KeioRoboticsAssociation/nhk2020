@@ -149,6 +149,8 @@ int main(int argc, char **argv)
             break;
     }
 
+    ROS_INFO("Serial Connected");
+
     char buf_pub[256] = {0};
     int recv_data_size = 0;
     int arraysize = 0;

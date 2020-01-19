@@ -15,7 +15,7 @@ int n_pi[4] = {0};
 
 void wheel_control(float theta_body, float vx, float vy, float w)
 {
-  if (flag == 2)  // reset
+  if (flag == 1)  // reset
   {
     for (int i = 0; i < 4;i++){
       theta_temp[i] = 0;

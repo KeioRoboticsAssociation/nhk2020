@@ -146,6 +146,8 @@ int main(int argc, char **argv)
         sleep(1);
     }
 
+    ROS_INFO("Serial Connected");
+
     char buf[256] = {0};
     int bufnum[2] = {0, 0};
     int bufthreshold = 128;
