@@ -20,7 +20,7 @@ void msgCallback(const sensor_msgs::Joy &msg)
     joystick_R[0] = -msg.axes[2];
     joystick_R[1] = msg.axes[3];
 
-    if (msg.buttons[4] > msg.buttons[5])
+    if (msg.buttons[4] > msg.buttons[5])    // rotation
         omega = 1.0;
     else if (msg.buttons[4] < msg.buttons[5])
         omega = -1.0;
@@ -63,7 +63,7 @@ void armCallback(const std_msgs::Int32MultiArray &msg)
     // flag_reply
     // 0:not yet, 1:finished
     static bool mode0flag = true;
-    if (moe0flag)
+    if (mode0flag)
     {
         if (msg.data[0] == 1)
         {

@@ -12,17 +12,27 @@ extern int flag;
 
 float theta_temp[4] = {0}; // -pi < theta_temp < pi
 int n_pi[4] = {0};
+int speed_flag[4] = {1,1,1,1};
 
 void wheel_control(float theta_body, float vx, float vy, float w)
 {
-  if (flag == 1)  // reset
+  if (flag == 1)  //stop
+    return;
+  if (flag == 2)  // reset
   {
     for (int i = 0; i < 4;i++){
+      theta_st[i] = 0;
       theta_temp[i] = 0;
+      speed_flag[i] = 1;
       n_pi[i] = 0;
     }
+    theta_1 = 0;
+    theta_2 = 0;
+    theta_3 = 0;
+    theta_4 = 0;
     return;
   }
+
   // wheel position now
   float wheelpos[4][2] = {0}; // [RF, LF, LB, RB][x, y]
   wheelpos[0][0] = BODY_WIDTH / sqrt(2.0f) * cos(theta_body + PI / 4.0f);
@@ -85,33 +95,42 @@ void wheel_control(float theta_body, float vx, float vy, float w)
   }
 
   // calc theta
+  float target_speed_temp[4];
   for (int i = 0; i < 4; i++)
   {
-    if (theta_st[i] > theta_temp[i] + PI * ((float)n_pi[i] + 0.5f))
+    
+    if (theta_st[i] - PI / 2.0f > theta_temp[i] + PI * (float)n_pi[i])
     {
       if (theta_st[i] > theta_temp[i] + PI * ((float)n_pi[i] + 1.5f))
         n_pi[i] += 2;
       else
+      {
         n_pi[i]++;
+        speed_flag[i] *= -1;
+      }
     }
-    else if (theta_st[i] < theta_temp[i] + PI * ((float)n_pi[i] - 0.5f))
+    else if (theta_st[i] + PI / 2.0f < theta_temp[i] + PI * (float)n_pi[i])
     {
       if (theta_st[i] < theta_temp[i] + PI * ((float)n_pi[i] - 1.5f))
         n_pi[i] -= 2;
       else
+      {
         n_pi[i]--;
+        speed_flag[i] *= -1;
+      }
     }
     theta_st[i] = theta_temp[i] + PI * (float)n_pi[i];
   }
 
   // calc speed and theta(wheel)
-  float target_speed_temp[4];
+  
   for (int i = 0; i < 4; i++)
   {
-    target_speed_temp[i] = sqrt(deltapos[i][0] * deltapos[i][0] + deltapos[i][1] * deltapos[i][1]);
-    if (n_pi[i] % 2 == 1)
-      target_speed_temp[i] *= -1.0f;
+    target_speed_temp[i] = (float)speed_flag[i] * sqrt(deltapos[i][0] * deltapos[i][0] + deltapos[i][1] * deltapos[i][1]);
+    //if (n_pi[i] % 2 == 1)
+    //  target_speed_temp[i] *= -1.0f;
   }
+  
 
   theta_1 = theta_st[0] - theta_body;
   theta_2 = theta_st[1] - theta_body;

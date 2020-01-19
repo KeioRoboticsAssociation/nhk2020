@@ -34,7 +34,7 @@ DigitalOut LED(LED3);
 DigitalOut OE(PF_1, 0); // レベルシフタを有効化
 
 //----------------------------------------Motor---------------------------------------------------
-#define STYLE_RB //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
+#define STYLE_LF //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
 
 #ifdef STYLE_RF
 //MotorA
@@ -221,8 +221,8 @@ void init_PID()
   target_angle = 0; //目標角
   target_speed = 0; //目標角速度.1秒間に進む角
 
-  set_PID_t(10.0F, 10.0F, 1.0F); //比例定数の設定
-  set_PID_w(0.2F, 0.1F, 0.001F); //比例定数の設定
+  set_PID_t(15.0F, 15.0F, 1.5F); //比例定数の設定
+  set_PID_w(0.2F, 0.2F, 0.005F); //比例定数の設定
 }
 
 int main(void)
@@ -538,9 +538,9 @@ void setter(float &value, float set)
 float transform_gear_into_encoder(float a, int b)
 { //b==0なら車輪の角速度をencoderの角速度に変換 b==1なら回転テーブルの角速度をencoderのに変換
   if (b == 0)
-    return a * 60 / 23; //ギア比
+    return a * 60.0f / 23.0f; //ギア比
   else
-    return a * 122 / 40;
+    return a * 122.0f / 40.0f * 500.0f / 360.0f;
 }
 
 float transform_encoder_into_gear(float a, int b)

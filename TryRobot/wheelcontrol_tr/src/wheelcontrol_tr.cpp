@@ -24,7 +24,7 @@ void joyCallback(const std_msgs::Float32MultiArray &msg)
 
 void bnoCallback(const std_msgs::Float32MultiArray &msg)
 {
-    ;//bno_theta = msg.data[0];
+    bno_theta = -msg.data[0];
 }
 
 void armCallback(const std_msgs::Int32MultiArray &msg)
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
     ros::NodeHandle arg_n("~");
     int looprate = 30;           // Hz
-    float accel[2] = {0.1, 0.1}; // [vel, omega]
+    float accel[2] = {0.01, 0.1}; // [vel, omega]
     arg_n.getParam("frequency", looprate);
     arg_n.getParam("accel_xy", accel[0]);
     arg_n.getParam("accel_theta", accel[1]);
@@ -60,9 +60,9 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(looprate);
     while (ros::ok())
     {
-        joy_x = joy_x_t * 1.0f / (float)looprate;
-        joy_y = joy_y_t * 1.0f / (float)looprate;
-        omega = omega_t * 3.0f / (float)looprate;
+        joy_x = joy_x_t * 0.8f / (float)looprate;
+        joy_y = joy_y_t * 0.8f / (float)looprate;
+        omega = omega_t * 2.0f / (float)looprate;
         if (omega > old_omega)
         {
             if (omega > old_omega + accel[1])

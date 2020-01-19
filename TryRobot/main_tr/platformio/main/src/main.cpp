@@ -3,11 +3,11 @@
 #include "mbedserial.h"
 
 /*********************** Param *************************/
-#define SUMPLING_TIME_US 10000
+#define SUMPLING_TIME_US 50000
 #define PI 3.141592f
 #define TRY_MOTOR_PERIOD 20 // (ms)
-#define TRY_MOTOR_DUTY 0.2f
-#define KICK_WAIT_TIME_MS 100
+#define TRY_MOTOR_DUTY 0.3f
+#define KICK_WAIT_TIME_MS 0 // (ms)
 
 float bno_offset = 0.0f; // (rad)
 float bno_old = 0.0f;    // (rad)
@@ -23,7 +23,9 @@ Mbedserial Ms(pc);
 PwmOut pwm_try(PA_8);
 DigitalOut phase_try(PC_11);
 DigitalOut kick1(PC_5);
+DigitalOut kick1_2(PB_14);
 DigitalOut kick2(PB_12);
+DigitalOut kick2_2(PC_4);
 DigitalOut myled(LED1);
 InterruptIn button(USER_BUTTON);
 
@@ -56,53 +58,53 @@ int main()
 
   while (1)
   {
-    switch (Ms.getint[0]) // flag
+    switch (Ms.getint[1]) // mode
     {
-    case 1: // stop
-      try_motor(0);
+    case 0: //others
+      modezeroflag = true;
       break;
-    case 2: // reset
-      set_offset();
+    case 1:
+    case 2:
+      if (!modezeroflag)
+        break;
+      modezeroflag = false;
+      replyflag = 0;
+      waittime_ms(500);
+      replyflag = 1;
+      break;
+    case 3: // kick
+      if (!modezeroflag)
+        break;
+      modezeroflag = false;
+      replyflag = 0;
+      waittime_ms(500);
+      kickandhold(0);
+      replyflag = 1;
       break;
     default:
-      switch (Ms.getint[1]) // mode
-      {
-      case 0: //others
-        modezeroflag = true;
+      if (!modezeroflag)
         break;
-      case 1:
-      case 2:
-        if (modezeroflag)
-          break;
-        modezeroflag = false;
-        replyflag = 0;
-        waittime_ms(500);
-        replyflag = 1;
-        break;
-      case 3: // kick
-        if (modezeroflag)
-          break;
-        modezeroflag = false;
-        replyflag = 0;
-        waittime_ms(500);
-        kickandhold(0);
-        replyflag = 1;
-        break;
-      }
-      // try_motor
-      if (Ms.getint[2] == 1)
-        try_motor(TRY_MOTOR_DUTY);
-      else if (Ms.getint[2] == -1)
-        try_motor(-TRY_MOTOR_DUTY);
-      else
-        try_motor(0);
+      modezeroflag = false;
+      replyflag = 0;
+      waittime_ms(500);
+      replyflag = 1;
+      break;
     }
+    // try_motor
+    if (Ms.getint[2] == 1)
+      try_motor(TRY_MOTOR_DUTY);
+    else if (Ms.getint[2] == -1)
+      try_motor(-TRY_MOTOR_DUTY);
+    else
+      try_motor(0);
+
     waittime_ms(100);
   }
 }
 
 void Push()
 {
+  set_offset();
   myled = 1;
 }
 
@@ -138,9 +140,9 @@ void get_angle()
   static int n_pi = 0;
   bno.get_angles();
   angle_raw = bno.euler.yaw * PI / 180.0f;
-  if (angle_raw + PI * (float)(n_pi + 1) > bno_old)
+  if (angle_raw + PI * (float)(n_pi - 1) > bno_old)
     n_pi -= 2;
-  else if (angle_raw + PI * ((float)n_pi - 1) < bno_old)
+  else if (angle_raw + PI * (float)(n_pi + 1) < bno_old)
     n_pi += 2;
   bno_old = angle_raw + PI * (float)n_pi;
   bno_angle = bno_old - bno_offset;
@@ -148,15 +150,15 @@ void get_angle()
 
 void try_motor(float duty_)
 {
-  if (duty_ < 0)
-  {
-    phase_try = 0;
-    pwm_try.pulsewidth_ms(-duty_ * (float)TRY_MOTOR_PERIOD);
-  }
-  else
+  if (duty_ > 0)
   {
     phase_try = 1;
     pwm_try.pulsewidth_ms(duty_ * (float)TRY_MOTOR_PERIOD);
+  }
+  else
+  {
+    phase_try = 0;
+    pwm_try.pulsewidth_ms(-duty_ * (float)TRY_MOTOR_PERIOD);
   }
 }
 
@@ -167,9 +169,15 @@ void kickandhold(int stop_)
 
   kick2 = 1;
 
-  waittime_ms(1000);
+  waittime_ms(3000);
   kick1 = 0;
   kick2 = 0;
+  kick1_2 = 1;
+  kick2_2 = 1;
+
+  waittime_ms(5000);
+  kick1_2 = 0;
+  kick2_2 = 0;
 }
 void timer_interrupt()
 {
@@ -189,7 +197,17 @@ void waittime_ms(float t)
   while (timecount < t)
   {
     get_angle();
-    wait_ms(10);
+    wait_ms(50);
+    switch (Ms.getint[0]) // flag
+    {
+    case 1: // stop{
+      try_motor(0);
+      t += 50.0f;
+      break;
+    case 2: // reset
+      set_offset();
+      break;
+    }
   }
   timecount = 0;
 }
