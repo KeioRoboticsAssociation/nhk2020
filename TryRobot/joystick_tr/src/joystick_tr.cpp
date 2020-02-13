@@ -5,6 +5,21 @@
 
 #include "sensor_msgs/Joy.h"
 
+/***************** joystick number ********************/
+#define JOY_X 2
+#define JOY_Y 3
+#define JOY_OMEGA_R 5
+#define JOY_OMEGA_L 4
+#define TRY_MOTOR_R 7
+#define TRY_MOTOR_L 6
+#define FLAG_1 11
+#define FLAG_2 10
+#define FLAG_3 9
+#define MODE_1 0
+#define MODE_2 1
+#define MODE_3 2
+/******************************************************/
+
 #define PI 3.141592f
 
 float joystick_R[6] = {0};
@@ -17,43 +32,43 @@ int try_motor = 0; // 0:none, 1:push, -1:pull
 
 void msgCallback(const sensor_msgs::Joy &msg)
 {
-    joystick_R[0] = -msg.axes[2];
-    joystick_R[1] = msg.axes[3];
+    joystick_R[0] = -msg.axes[JOY_X];
+    joystick_R[1] = msg.axes[JOY_Y];
 
-    if (msg.buttons[4] > msg.buttons[5])    // rotation
+    if (msg.buttons[JOY_OMEGA_L] > msg.buttons[JOY_OMEGA_R])    // rotation
         omega = 1.0;
-    else if (msg.buttons[4] < msg.buttons[5])
+    else if (msg.buttons[JOY_OMEGA_L] < msg.buttons[JOY_OMEGA_R])
         omega = -1.0;
     else
         omega = 0;
 
     // try_motor
-    if (msg.buttons[6] > msg.buttons[7])
+    if (msg.buttons[TRY_MOTOR_L] > msg.buttons[TRY_MOTOR_R])
         try_motor = 1;
-    else if (msg.buttons[6] < msg.buttons[7])
+    else if (msg.buttons[TRY_MOTOR_L] < msg.buttons[TRY_MOTOR_R])
         try_motor = -1;
     else
         try_motor = 0;
 
     // flag
-    if (msg.buttons[11] == 1) // stop
+    if (msg.buttons[FLAG_1] == 1) // stop
         flag = 1;
-    if (flag == 1 && msg.buttons[9] == 1) // enable
+    if (flag == 1 && msg.buttons[FLAG_3] == 1) // enable
         flag = 3;
     if (flag == 0)
     {
-        if (msg.buttons[10] == 1) // reset
+        if (msg.buttons[FLAG_2] == 1) // reset
             flag = 2;
     }
 
     // mode
     if (mode == 0) // others
     {
-        if (msg.buttons[0] == 1) // catch
+        if (msg.buttons[MODE_1] == 1) // catch
             mode = 1;
-        else if (msg.buttons[1] == 1) // try
+        else if (msg.buttons[MODE_2] == 1) // try
             mode = 2;
-        else if (msg.buttons[2] == 1) // kick
+        else if (msg.buttons[MODE_3] == 1) // kick
             mode = 3;
     }
 }
@@ -101,6 +116,7 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
+        // joystick wheel
         std_msgs::Float32MultiArray floatarray;
         floatarray.data.resize(3);
         floatarray.data[0] = joystick_R[0];
@@ -118,11 +134,11 @@ int main(int argc, char **argv)
 
             if (flag == 2 || flag == 3)
             {
-                if (flagcount < looprate / 2)
+                if (flagcount < looprate / 2)   // publishing flag
                     flagcount++;
                 else
                 {
-                    flagcount = 0;
+                    flagcount = 0;  // stop publish
                     flag = 0;
                 }
             }

@@ -137,16 +137,19 @@ int main(int argc, char **argv)
     arg_n.getParam("looprate", sub_loop_rate);
 
     fd1 = open_serial(port_name.c_str());
-    while (fd1 < 0)
+    
+    while (ros::ok())
     {
         fd1 = open_serial(port_name.c_str());
-        ROS_ERROR("Serial Fail: cound not open %s", port_name.c_str());
-        printf("Serial Fail\n");
+        //ROS_ERROR("Serial Fail: cound not open %s", port_name.c_str());
         //ros::shutdown();
+        printf("Serial Connecting\n");
         sleep(1);
+        if (fd1 >= 0)
+            break;
     }
 
-    ROS_INFO("Serial Connected");
+    ROS_INFO("Serial Success");
 
     char buf[256] = {0};
     int bufnum[2] = {0, 0};
@@ -158,6 +161,13 @@ int main(int argc, char **argv)
     int arraysize = 0;
     int rec;
     ros::Rate loop_rate(sub_loop_rate);
+
+    // remove initial_buff_data
+    for (i = 0; i < 1000; i++)
+    {
+        read(fd1, &buf_pub[0], sizeof(buf_pub));
+        usleep(1000);
+    }
 
     while (ros::ok())
     {

@@ -40,13 +40,13 @@ void kickandhold(int);
 void timer_interrupt();
 void waittime_ms(float);
 
-int replyflag = 1;
-bool modezeroflag = false;
+int replyflag = 1;  // publish (0:mode-task, 1:finished)
+bool modezeroflag = false; // true: mode-task has already done
 /******************************************************/
 
 // subscribe_int: flag, mode, try_motor
 // publish_float: bno
-// publish_int: reply
+// publish_int: replyflag
 
 int main()
 {
@@ -181,6 +181,7 @@ void kickandhold(int stop_)
 }
 void timer_interrupt()
 {
+  // send replyflag and bno_angle
   static bool writeflag = true;
   if (writeflag)
     Ms.float_write(&bno_angle, 1);

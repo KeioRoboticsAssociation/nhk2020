@@ -4,22 +4,32 @@
 
 #include "sensor_msgs/Joy.h"
 
+/********************* parameter ************************/
+float Kpid[3] = {1.0, 1.0, 0.1};
+#define STOCKMAX 10.0;
+/********************************************************/
+
 extern float theta_1, theta_2, theta_3, theta_4;
 extern float target_speed_1, target_speed_2, target_speed_3, target_speed_4;
 void wheel_control(float, float, float, float);
 
-float bno_theta = 0, joy_x = 0, joy_y = 0, omega = 0;
-float joy_x_t = 0, joy_y_t = 0, omega_t = 0;
-float joy_xy = 0, old_joy_xy = 0, old_omega = 0;
+float bno_theta = 0, ref_theta = 0;
+float loop_vx = 0, loop_vy = 0, loop_omega = 0;
+float loop_vx_old = 0, loop_vy_old = 0, loop_omega_old = 0;
+float joy_vx = 0, joy_vy = 0, joy_omega = 0;
+float path_vx = 0, path_vy = 0;
 
 int flag = 0;
 int mode = 0;
 
+void calc_accel(float &now, float &old, float delta);
+float theta_PID(float now, float ref, float sumpling_freq);
+
 void joyCallback(const std_msgs::Float32MultiArray &msg)
 {
-    joy_x_t = msg.data[0];
-    joy_y_t = msg.data[1];
-    omega_t = msg.data[2];
+    joy_vx = msg.data[0] * 0.8f;
+    joy_vy = msg.data[1] * 0.8f;
+    joy_omega = msg.data[2] * 0.2f;
 }
 
 void bnoCallback(const std_msgs::Float32MultiArray &msg)
@@ -49,7 +59,7 @@ int main(int argc, char **argv)
 
     ros::NodeHandle arg_n("~");
     int looprate = 30;           // Hz
-    float accel[2] = {0.01, 0.1}; // [vel, omega]
+    float accel[2] = {0.2, 0.2}; // [vel, omega]
     arg_n.getParam("frequency", looprate);
     arg_n.getParam("accel_xy", accel[0]);
     arg_n.getParam("accel_theta", accel[1]);
@@ -60,48 +70,27 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(looprate);
     while (ros::ok())
     {
-        joy_x = joy_x_t * 0.8f / (float)looprate;
-        joy_y = joy_y_t * 0.8f / (float)looprate;
-        omega = omega_t * 2.0f / (float)looprate;
-        if (omega > old_omega)
+        // calc omega
+        ref_theta += joy_omega / (float)looprate;
+        loop_omega = theta_PID(bno_theta, ref_theta, (float)looprate);
+        // calc velocity
+        loop_vx = (joy_vx + path_vx) / (float)looprate;
+        loop_vy = (joy_vy + path_vy) / (float)looprate;
+        if (flag == 1) //stop
         {
-            if (omega > old_omega + accel[1])
-                omega = old_omega + accel[1];
+            loop_vx = 0;
+            loop_vy = 0;
+            loop_omega = 0;
         }
-        else
-        {
-            if (omega < old_omega - accel[1])
-                omega = old_omega - accel[1];
-        }
-        old_omega = omega;
+        // calc accel
+        calc_accel(loop_vx, loop_vx_old, accel[0]);
+        calc_accel(loop_vy, loop_vy_old, accel[0]);
+        calc_accel(loop_omega, loop_omega_old, accel[1]);
 
-        joy_xy = sqrt(joy_x * joy_x + joy_y * joy_y);
-        if (joy_xy < 1e-8)
-        {
-            joy_xy = 0;
-            joy_x = 0;
-            joy_y = 0;
-        }
-        else
-        {
-            float joy_xy_temp = joy_xy;
-            if (joy_xy > old_joy_xy)
-            {
-                if (joy_xy > old_joy_xy + accel[0])
-                    joy_xy = old_joy_xy + accel[0];
-            }
-            else
-            {
-                if (joy_xy < old_joy_xy - accel[0])
-                    joy_xy = old_joy_xy - accel[0];
-            }
-            joy_x *= joy_xy / joy_xy_temp;
-            joy_y *= joy_xy / joy_xy_temp;
-        }
-        old_joy_xy = joy_xy;
+        // calc wheel speed
+        wheel_control(bno_theta, loop_vx, loop_vy, loop_omega);
 
-        wheel_control(bno_theta, joy_x, joy_y, omega);
-
+        // publish wheel speed
         std_msgs::Float32MultiArray floatarray;
         floatarray.data.resize(2);
         floatarray.data[0] = target_speed_1 * (float)looprate;
@@ -123,4 +112,35 @@ int main(int argc, char **argv)
         ros::spinOnce();
         loop_rate.sleep();
     }
+}
+
+void calc_accel(float &now, float &old, float delta)
+{
+    if (now > old)
+    {
+        if (now > old + delta)
+            now = old + delta;
+    }
+    else
+    {
+        if (now < old - delta)
+            now = old - delta;
+    }
+    //if (abs(now) < 0.01)
+    //    now = 0;
+    old = now;
+}
+
+float theta_PID(float now, float ref, float sumpling_freq)
+{
+    float diff = ref - now;
+    static float stock = 0;
+    static float olddiff = 0;
+    stock += (diff + olddiff) / (sumpling_freq * 2);
+    if (stock > STOCKMAX)
+        stock = STOCKMAX;
+    else if (stock < -STOCKMAX)
+        stock = -STOCKMAX;
+
+    return Kpid[0] * diff + Kpid[1] * stock + Kpid[2] * (diff - olddiff) * sumpling_freq;
 }
