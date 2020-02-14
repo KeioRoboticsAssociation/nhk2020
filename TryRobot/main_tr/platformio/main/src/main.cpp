@@ -3,7 +3,6 @@
 #include "mbedserial.h"
 
 /*********************** Param *************************/
-#define SUMPLING_TIME_US 50000
 #define PI 3.141592f
 #define TRY_MOTOR_PERIOD 20 // (ms)
 #define TRY_MOTOR_DUTY 0.3f
@@ -13,7 +12,6 @@ float bno_offset = 0.0f; // (rad)
 float bno_old = 0.0f;    // (rad)
 float bno_angle = 0.0f;  // old - offset (rad)
 
-float timecount = 0;
 /*******************************************************/
 
 Serial pc(USBTX, USBRX, 115200);
@@ -35,18 +33,18 @@ void Pull();
 void bno_init();
 void set_offset();
 void get_angle();
-void try_motor(float);
-void kickandhold(int);
-void timer_interrupt();
-void waittime_ms(float);
+void try_motor(int phasedata_, int flagdata_);
+void kickandhold();
+void serial_interrupt();
+void waittime_ms(int t);
 
-int replyflag = 1;  // publish (0:mode-task, 1:finished)
+int replyflag = 1;         // publish (0:mode-task, 1:finished)
 bool modezeroflag = false; // true: mode-task has already done
 /******************************************************/
 
-// subscribe_int: flag, mode, try_motor
-// publish_float: bno
-// publish_int: replyflag
+// subscribe_int: [flag, mode, try_motor]
+// publish_float: [bno]
+// publish_int: [replyflag]
 
 int main()
 {
@@ -54,51 +52,34 @@ int main()
   button.rise(Pull);
   bno_init();
   pwm_try.period_ms(TRY_MOTOR_PERIOD);
-  ticker.attach_us(&timer_interrupt, SUMPLING_TIME_US);
+  Ms.int_attach(serial_interrupt);
 
   while (1)
   {
-    switch (Ms.getint[1]) // mode
+    if (Ms.getint[1] == 0) // mode = others
     {
-    case 0: //others
       modezeroflag = true;
-      break;
-    case 1:
-    case 2:
-      if (!modezeroflag)
-        break;
-      modezeroflag = false;
-      replyflag = 0;
-      waittime_ms(500);
-      replyflag = 1;
-      break;
-    case 3: // kick
-      if (!modezeroflag)
-        break;
-      modezeroflag = false;
-      replyflag = 0;
-      waittime_ms(500);
-      kickandhold(0);
-      replyflag = 1;
-      break;
-    default:
-      if (!modezeroflag)
-        break;
-      modezeroflag = false;
-      replyflag = 0;
-      waittime_ms(500);
-      replyflag = 1;
-      break;
     }
-    // try_motor
-    if (Ms.getint[2] == 1)
-      try_motor(TRY_MOTOR_DUTY);
-    else if (Ms.getint[2] == -1)
-      try_motor(-TRY_MOTOR_DUTY);
-    else
-      try_motor(0);
-
-    waittime_ms(100);
+    else if (modezeroflag)
+    {
+      // mode-task
+      modezeroflag = false;
+      replyflag = 0;
+      waittime_ms(500);
+      switch (Ms.getint[1]) // mode
+      {
+      case 1:
+      case 2:
+        break;
+      case 3: // kick
+        kickandhold();
+        break;
+      default:
+        break;
+      }
+      replyflag = 1;
+    }
+    waittime_ms(10);
   }
 }
 
@@ -148,38 +129,45 @@ void get_angle()
   bno_angle = bno_old - bno_offset;
 }
 
-void try_motor(float duty_)
+void try_motor(int phasedata_, int flagdata_)
 {
-  if (duty_ > 0)
-  {
-    phase_try = 1;
-    pwm_try.pulsewidth_ms(duty_ * (float)TRY_MOTOR_PERIOD);
-  }
-  else
+  float duty_ = 0;
+  if (flagdata_ == 1 || phasedata_ == 0) // stop or try_motor=0
   {
     phase_try = 0;
-    pwm_try.pulsewidth_ms(-duty_ * (float)TRY_MOTOR_PERIOD);
+    pwm_try.pulsewidth_ms(0);
+  }
+  else if (phasedata_ == 1)
+  {
+    phase_try = 1;
+    pwm_try.pulsewidth_ms(TRY_MOTOR_DUTY * (float)TRY_MOTOR_PERIOD);
+  }
+  else if (phasedata_ == -1)
+  {
+    phase_try = 0;
+    pwm_try.pulsewidth_ms(TRY_MOTOR_DUTY * (float)TRY_MOTOR_PERIOD);
   }
 }
 
-void kickandhold(int stop_)
+void kickandhold()
 {
+  // kick
   kick1 = 1;
-  waittime_ms(KICK_WAIT_TIME_MS);
-
+  waittime_ms(KICK_WAIT_TIME_MS); // delay
   kick2 = 1;
-
-  waittime_ms(3000);
+  waittime_ms(3000); // wait
+  // return
   kick1 = 0;
   kick2 = 0;
   kick1_2 = 1;
   kick2_2 = 1;
-
-  waittime_ms(5000);
+  waittime_ms(5000); // wait
+  // switch off
   kick1_2 = 0;
   kick2_2 = 0;
 }
-void timer_interrupt()
+
+void serial_interrupt()
 {
   // send replyflag and bno_angle
   static bool writeflag = true;
@@ -188,27 +176,20 @@ void timer_interrupt()
   else
     Ms.int_write(&replyflag, 1);
   writeflag = !writeflag;
-
-  timecount += (float)SUMPLING_TIME_US / 1000.0f;
 }
 
-void waittime_ms(float t)
+void waittime_ms(int t)
 {
-  timecount = 0;
-  while (timecount < t)
+  int t_count = 0;
+  while (t_count < t)
   {
-    get_angle();
-    wait_ms(50);
-    switch (Ms.getint[0]) // flag
+    try_motor(Ms.getint[2], Ms.getint[0]);  // try_motor
+    if (Ms.getint[0] != 1) //stop
     {
-    case 1: // stop{
-      try_motor(0);
-      t += 50.0f;
-      break;
-    case 2: // reset
-      set_offset();
-      break;
+      t_count += 10;
+      if (Ms.getint[0] == 2) //reset
+        set_offset();
     }
+    wait_ms(10);
   }
-  timecount = 0;
 }

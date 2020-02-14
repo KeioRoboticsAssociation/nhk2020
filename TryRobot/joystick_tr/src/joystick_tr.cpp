@@ -26,7 +26,7 @@ float joystick_R[6] = {0};
 float omega = 0.0;
 int flag = 0;      // 0:not publish, 1:stop, 2:reset, 3:enable
                    // (1->button->3, 2->while->0, 3->while->0)
-int mode = 0;      // 0:other, 1:catch, 2:try, 3:kick
+int mode = 0;      // 0:others, 1:catch, 2:try, 3:kick
                    // send arm mbed (mbedreply->0)
 int try_motor = 0; // 0:none, 1:push, -1:pull
 
