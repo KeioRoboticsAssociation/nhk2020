@@ -170,8 +170,6 @@ void encoder_t();
 void encoder_w();
 void init_wheel_pos_by_z(void);
 void init_wheel_pos();
-void test(void);
-void test_PID(void);
 void move_table(float);
 void move_wheel(float);
 void Timer_interrupt();
@@ -183,6 +181,7 @@ void set_PID_w(float _Kp, float _Ki, float _Kd);
 void setter(float &value, float set);
 float transform_gear_into_encoder(float a, int b);
 float transform_encoder_into_gear(float a, int b);
+void send_data();
 
 void init()
 {
@@ -228,6 +227,8 @@ void init_PID()
 int main(void)
 {
   init();
+  //ROSの送信設定
+  Ms.float_attach(senddata)
   //SW1押されるまで待機
   while (1)
   {
@@ -250,11 +251,6 @@ int main(void)
     }
   }
 
-  //回路についてあるデップスイッチ1を押すと次に進む
-  //test();//PID_initしたらこれはやってはいけない
-  //init_PID(); //testの前にこれやると割り込みが発生してPID以外では回らなくなってしまう//ここでやると暴走する。init内でやると暴走しない
-  //test_PID();
-
   //ROSからの受付部分　testがうまく行ったら実行
   //ROSflag=true;とするとROSの割り込みが開始する
   ROSflag = true;
@@ -265,8 +261,6 @@ int main(void)
     if (!SW1)
       break; //回路についてあるデップスイッチ
   }
-
-  //
 }
 
 void encoder_t(void)
@@ -275,8 +269,6 @@ void encoder_t(void)
     en_count_t += 1;
   else
     en_count_t -= 1;
-
-  //if(!initflag) pc.printf("en_count_t : %d\n",en_count_t);
   //pc.printf("Angle_t:%d\n", en_count_t);
 }
 
@@ -297,13 +289,6 @@ void init_wheel_pos_by_z(void)
     Table.setSpeed(0);
     //pc.printf("Z_demension was found\n");
     initflag = true;
-    /*
-    wait_us(500000);
-    Table.setSpeed(0.2F);
-    while (en_count_t != (int)transform_gear_into_encoder(-280, 1));
-    Table.setSpeed(0);
-    test();
-    */
   }
 }
 
@@ -316,7 +301,6 @@ void init_wheel_pos()
   wait_us(500000);
   if (initflag)
   {
-    //pc.printf("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n");
     return;
   }
   Table.setSpeed(0);
@@ -329,65 +313,6 @@ void init_wheel_pos()
   Table.setSpeed(0);
   en_count_t = 0;
   return;
-}
-
-void test(void)
-{
-  Wheel.setSpeed(0.2F);
-  wait_us(1000000);
-  Wheel.setSpeed(0);
-  /*
-  Table.setSpeed(0.2F);
-  wait_us(10000000);
-  pc.printf("a");
-  Table.setSpeed(0);
-  wait_us(1000000);
-  Wheel.setSpeed(0.2F);
-  wait_us(1000000);
-
-  Table.setSpeed(-0.2F);
-  wait_us(1000000);
-  Table.setSpeed(0);
-  Wheel.setSpeed(0);
-  wait_us(1000000);
-  Wheel.setSpeed(-0.2F);
-  wait_us(3000000);
-  Wheel.setSpeed(0);
-  */
-}
-
-void test_PID(void)
-{
-  /*
-  move_table(180);
-  wait_us(3000000);
-  move_table(0);
-  */
-  /*
-  move_wheel(720);
-  wait_us(3000000);
-  move_wheel(360);
-  wait_us(4000000);
-  move_wheel(-360);
-  wait_us(4000000);
-  move_wheel(0);
-  */
-
-  move_table(180);
-  move_wheel(360);
-  wait_us(3000000);
-  move_table(0);
-  wait_us(3000000);
-  move_wheel(-360);
-  wait_us(3000000);
-  move_wheel(0);
-  wait_us(1000000);
-  move_table(-90);
-  wait_us(1000000);
-  move_table(-180);
-  wait_us(1000000);
-  move_table(0);
-  wait_us(1000000);
 }
 
 void Timer_interrupt()
@@ -412,9 +337,10 @@ void Timer_interrupt()
   {
     if (!SW1)
       return;
-    move_table(Ms.getfloat[1] * 180 / 3.141592); //ROSから目標角を受け付ける//radから°に変換
+    //ROSから目標角を受け付ける//radから°に変換
+    move_table(Ms.getfloat[1] * 180 / 3.141592);
     move_wheel(Ms.getfloat[0] * 180 * 1000 / 35 / 3.141592);
-  } //ROSから目標角を受け付ける//値適当、後でやる
+  }
 }
 
 void move_table(float _target_angle)
@@ -431,7 +357,6 @@ void move_wheel(float _target_speed)
 
 void speed_calc_w(void) //wheel
 {
-  //pc.printf("encount;%d  oldencount;%d\n", en_count,old_en_count);//d_en_countは現在値
   d_en_count_w = en_count_w - old_en_count_w;
   old_en_count_w = en_count_w; //en_countは古くなったので保管しておく
   d_en_count_w *= 1000000 / SUMPLING_TIME_US;
@@ -462,8 +387,6 @@ void PID_t(void)
   else if (table_speed <= -0.88)
     table_speed = -0.88;
   Table.setSpeed(table_speed);
-  //pc.printf("%d\n", (int)(table_speed * 1000));
-  //pc.printf("%d\n", (int)(diff_t[1]*100));
 }
 
 void PID_w(void)
@@ -549,4 +472,8 @@ float transform_encoder_into_gear(float a, int b)
     return a * 23 / 60;
   else
     return a * 40 / 122;
+}
+
+void send_data(){
+  ;
 }

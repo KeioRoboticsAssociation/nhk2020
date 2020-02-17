@@ -107,7 +107,7 @@ int main(int argc, char **argv)
     ros::Subscriber arm_sub = n.subscribe("arm_mbed_reply", 100, armCallback);
 
     ros::NodeHandle arg_n("~");
-    int looprate = 30; // Hz
+    int looprate = 60; // Hz
     arg_n.getParam("loop", looprate);
 
     ros::Rate loop_rate(looprate);

@@ -1,0 +1,15 @@
+<launch>
+
+  <!--frequency [Hz]-->
+
+  <arg name="frequency" default="30" />
+  <arg name="control_frequency" default="30" />
+
+
+  <!--control wheel node-->
+
+  <node pkg="localization_4wds_tr" name="localization_4wds_tr_node" type="localization_4wds_tr.cpp" output="screen">
+    <param name = "frequency" value = "$(arg frequency)"/>
+  </node>
+
+</launch>
