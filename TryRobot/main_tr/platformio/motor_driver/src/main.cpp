@@ -228,7 +228,7 @@ int main(void)
 {
   init();
   //ROSの送信設定
-  Ms.float_attach(senddata)
+  Ms.float_attach(send_data);
   //SW1押されるまで待機
   while (1)
   {
@@ -469,11 +469,17 @@ float transform_gear_into_encoder(float a, int b)
 float transform_encoder_into_gear(float a, int b)
 {
   if (b == 0)
-    return a * 23 / 60;
+    return a * 23.0f / 60.0f;
   else
-    return a * 40 / 122;
+    return a * 40.0f / 122.0f;
 }
 
-void send_data(){
-  ;
+void send_data()
+{
+  //車輪の速度(m/s)、テーブル角度(rad)を送る
+  //d_en_count_w、en_count_t
+  float wheel_vel = transform_encoder_into_gear(d_en_count_w, 0) / (180 * 1000 / 35 / 3.141592);
+  float table_angle = transform_encoder_into_gear(en_count_t, 1) / 180 * 3.141592;
+  Ms.float_write(&wheel_vel, 1);
+  Ms.float_write(&table_angle, 1);
 }
