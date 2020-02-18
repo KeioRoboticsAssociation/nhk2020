@@ -79,7 +79,7 @@ int main()
       }
       replyflag = 1;
     }
-    waittime_ms(10);
+    waittime_ms(30);
   }
 }
 
@@ -107,6 +107,7 @@ void bno_init()
   myled = 0;
 
   bno.setmode(OPERATION_MODE_IMUPLUS);
+  get_angle();
   set_offset();
 }
 
@@ -120,7 +121,8 @@ void get_angle()
   static float angle_raw = 0.0;
   static int n_pi = 0;
   bno.get_angles();
-  angle_raw = bno.euler.yaw * PI / 180.0f;
+  angle_raw = -bno.euler.yaw * PI / 180.0f;
+  //angle_raw += 0.01;////////////////////
   if (angle_raw + PI * (float)(n_pi - 1) > bno_old)
     n_pi -= 2;
   else if (angle_raw + PI * (float)(n_pi + 1) < bno_old)
@@ -169,6 +171,7 @@ void kickandhold()
 
 void serial_interrupt()
 {
+  //get_angle();
   // send replyflag and bno_angle
   static bool writeflag = true;
   if (writeflag)
@@ -190,6 +193,7 @@ void waittime_ms(int t)
       if (Ms.getint[0] == 2) //reset
         set_offset();
     }
+    get_angle();
     wait_ms(10);
   }
 }

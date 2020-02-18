@@ -59,11 +59,9 @@ void float_callback(const std_msgs::Float32MultiArray &serial_msg)
     floattochar = new char[floatdatasize * 4 + 6];
     floattochar[0] = 'f';
     *(int *)(&floattochar[1]) = floatdatasize;
-    //memcpy(&floattochar[1], &datasize, 4);
     for (int i = 0; i < floatdatasize; i++)
     {
         *(float *)(&floattochar[i * 4 + 5]) = serial_msg.data[i];
-        //memcpy(&floattochar[i * 4 + 5], &serial_msg.data[i], 4);
     }
     floattochar[floatdatasize * 4 + 5] = endmsg;
 
@@ -82,11 +80,9 @@ void int_callback(const std_msgs::Int32MultiArray &serial_msg)
     inttochar = new char[intdatasize * 4 + 6];
     inttochar[0] = 'i';
     *(int *)(&inttochar[1]) = intdatasize;
-    //memcpy(&inttochar[1], &datasize, 4);
     for (int i = 0; i < intdatasize; i++)
     {
         *(int *)(&inttochar[i * 4 + 5]) = serial_msg.data[i];
-        //memcpy(&inttochar[i * 4 + 5], &serial_msg.data[i], 4);
     }
     inttochar[intdatasize * 4 + 5] = endmsg;
 
@@ -105,7 +101,6 @@ void string_callback(const std_msgs::String &serial_msg)
     chartochar = new char[chardatasize + 6];
     chartochar[0] = 'c';
     *(int *)(&chartochar[1]) = chardatasize;
-    //memcpy(&chartochar[1], &datasize, 4);
     std::string str = serial_msg.data;
     memcpy(&chartochar[5], str.c_str(), chardatasize);
     chartochar[chardatasize + 5] = endmsg;
@@ -141,8 +136,6 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         fd1 = open_serial(port_name.c_str());
-        //ROS_ERROR("Serial Fail: cound not open %s", port_name.c_str());
-        //ros::shutdown();
         printf("Serial Connecting\n");
         sleep(1);
         if (fd1 >= 0)
@@ -152,7 +145,7 @@ int main(int argc, char **argv)
     ROS_INFO("Serial Success");
 
     char buf[256] = {0};
-    int bufnum[2] = {0, 0};
+    int bufnum[2] = {0, 0}; // [read index, receive index]
     int bufthreshold = 128;
     bool endmsg_flag = false;
     bool skip_flag = false;
@@ -163,7 +156,7 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(sub_loop_rate);
 
     // remove initial_buff_data
-    for (i = 0; i < 1000; i++)
+    for (int i = 0; i < 1000; i++)
     {
         read(fd1, &buf_pub[0], sizeof(buf_pub));
         usleep(1000);
@@ -171,9 +164,9 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        int recv_data = read(fd1, &buf[bufnum[1]], bufthreshold);
+        int recv_data = read(fd1, &buf[bufnum[1]], sizeof(buf));
 
-        if (recv_data > 0 && recv_data < 64)
+        if (recv_data > 0 && recv_data < bufthreshold)
         {
             bufnum[1] += recv_data;
 
@@ -183,6 +176,10 @@ int main(int argc, char **argv)
                 if (buf[bufnum[0] + recv_data_size - 1] == endmsg)
                 {
                     arraysize = *(int *)(&buf[bufnum[0] + 1]);
+                    if (arraysize < 0 || arraysize > bufthreshold / 4){
+                        skip_flag = true;
+                        break;
+                        }
                     switch (buf[bufnum[0]])
                     {
                     case 'f':
@@ -281,7 +278,7 @@ int main(int argc, char **argv)
             }
         }
 
-        // publish
+        // serial_write
         if (floatflag)
         {
             rec = write(fd1, floattochar, floatdatasize * 4 + 6);

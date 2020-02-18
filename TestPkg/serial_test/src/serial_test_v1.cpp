@@ -158,7 +158,7 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(sub_loop_rate);
 
     // remove initial_buff_data
-    for (i = 0; i < 1000; i++)
+    for (int i = 0; i < 1000; i++)
     {
         read(fd1, &buf_pub[0], sizeof(buf_pub));
         usleep(1000);

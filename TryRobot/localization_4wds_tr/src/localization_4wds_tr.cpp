@@ -109,7 +109,7 @@ int main(int argc, char **argv)
                           bno_theta);
 
         // calc yaw->quaternion
-        geometory_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(bno_theta);
+        geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(bno_theta);
 
         // tf trans odom->base_link
         geometry_msgs::TransformStamped odom_trans;

@@ -2,11 +2,9 @@
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/Int32MultiArray.h"
 
-#include "sensor_msgs/Joy.h"
-
 /********************* parameter ************************/
+float stock_max = 10.0f;
 float Kpid[3] = {1.0, 1.0, 0.1};
-#define STOCKMAX 10.0;
 /********************************************************/
 
 extern float theta_1, theta_2, theta_3, theta_4;
@@ -73,6 +71,7 @@ int main(int argc, char **argv)
         // calc omega
         ref_theta += joy_omega / (float)looprate;
         loop_omega = theta_PID(bno_theta, ref_theta, (float)looprate);
+        loop_omega = joy_omega;/////////////
         // calc velocity
         loop_vx = (joy_vx + path_vx) / (float)looprate;
         loop_vy = (joy_vy + path_vy) / (float)looprate;
@@ -133,14 +132,18 @@ void calc_accel(float &now, float &old, float delta)
 
 float theta_PID(float now, float ref, float sumpling_freq)
 {
-    float diff = ref - now;
-    static float stock = 0;
+    static float stock_ = 0;
     static float olddiff = 0;
-    stock += (diff + olddiff) / (sumpling_freq * 2);
-    if (stock > STOCKMAX)
-        stock = STOCKMAX;
-    else if (stock < -STOCKMAX)
-        stock = -STOCKMAX;
+    float diff = ref - now;
+    stock_ += (diff + olddiff) / (sumpling_freq * 2);
+    if (stock_ > stock_max)
+        stock_ = stock_max;
+    else if (stock_ < -stock_max)
+        stock_ = -stock_max;
+    if (flag == 1) //stop
+        stock_ = 0;
 
-    return Kpid[0] * diff + Kpid[1] * stock + Kpid[2] * (diff - olddiff) * sumpling_freq;
+    float ans = Kpid[0] * diff + Kpid[1] * stock_ + Kpid[2] * (diff - olddiff) * sumpling_freq;
+    olddiff = diff;
+    return ans;
 }

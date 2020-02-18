@@ -1,7 +1,7 @@
 <launch>
 
     <node pkg="joystick_tr" name="joystick_tr" type="joystick_tr_node" output="screen">
-    <param name = "loop" value = "60"/>
+    <param name = "loop" value = "80"/>
     </node>
 
     <node pkg="joy" name="joy" type="joy_node" />
