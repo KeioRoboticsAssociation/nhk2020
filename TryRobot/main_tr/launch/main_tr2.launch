@@ -22,6 +22,11 @@
   <arg name="frequency" value="$(arg control_frequency)" />
   </include>
 
+  <!--localization-->
+  <include file="$(find localization_4wds_tr)/launch/localization_4wds_tr.launch">
+  <arg name="frequency" value="$(arg control_frequency)" />
+  </include>
+
 
   <!--mbed serial-->
   <!--wheel-->
