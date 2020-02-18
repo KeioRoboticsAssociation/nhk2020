@@ -34,7 +34,7 @@ DigitalOut LED(LED3);
 DigitalOut OE(PF_1, 0); // レベルシフタを有効化
 
 //----------------------------------------Motor---------------------------------------------------
-#define STYLE_LF //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
+#define STYLE_LB //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
 
 #ifdef STYLE_RF
 //MotorA
@@ -478,8 +478,8 @@ void send_data()
 {
   //車輪の速度(m/s)、テーブル角度(rad)を送る
   //d_en_count_w、en_count_t
-  float wheel_vel = transform_encoder_into_gear(d_en_count_w, 0) / (180 * 1000 / 35 / 3.141592);
-  float table_angle = transform_encoder_into_gear(en_count_t, 1) / 180 * 3.141592;
-  Ms.float_write(&wheel_vel, 1);
-  Ms.float_write(&table_angle, 1);
+  float data[2] = {0};
+  data[0] = transform_encoder_into_gear(d_en_count_w, 0) / (180.0f * 1000.0f / 35.0f / 3.141592f);
+  data[1] = transform_encoder_into_gear(en_count_t, 1) *2.0f * 3.141592f / 500.0f;
+  Ms.float_write(data, 2);
 }

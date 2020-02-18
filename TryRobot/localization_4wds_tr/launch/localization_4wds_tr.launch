@@ -8,7 +8,7 @@
 
   <!--control wheel node-->
 
-  <node pkg="localization_4wds_tr" name="localization_4wds_tr_node" type="localization_4wds_tr.cpp" output="screen">
+  <node pkg="localization_4wds_tr" name="localization_4wds_tr" type="localization_4wds_tr_node" output="screen">
     <param name = "frequency" value = "$(arg frequency)"/>
   </node>
 

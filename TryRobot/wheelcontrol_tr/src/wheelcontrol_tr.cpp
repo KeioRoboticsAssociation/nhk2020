@@ -32,7 +32,7 @@ void joyCallback(const std_msgs::Float32MultiArray &msg)
 
 void bnoCallback(const std_msgs::Float32MultiArray &msg)
 {
-    bno_theta = -msg.data[0];
+    bno_theta = msg.data[0];
 }
 
 void armCallback(const std_msgs::Int32MultiArray &msg)

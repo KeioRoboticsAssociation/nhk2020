@@ -18,7 +18,7 @@ void set_body_position(float x_, float y_, float theta_);
 
 void bnoCallback(const std_msgs::Float32MultiArray &msg)
 {
-    bno_theta = -msg.data[0];
+    bno_theta = msg.data[0];
 }
 
 void flagCallback(const std_msgs::Int32MultiArray &msg)
