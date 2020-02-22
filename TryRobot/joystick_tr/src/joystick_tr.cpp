@@ -18,6 +18,11 @@
 #define MODE_1 0
 #define MODE_2 1
 #define MODE_3 2
+#define CHANGE
+#define START_K1
+#define RECEIVE_K2
+#define TRY_K3
+#define RED_BLUE 
 /******************************************************/
 
 #define PI 3.141592f
@@ -29,13 +34,14 @@ int flag = 0;      // 0:not publish, 1:stop, 2:reset, 3:enable
 int mode = 0;      // 0:others, 1:catch, 2:try, 3:kick
                    // send arm mbed (mbedreply->0)
 int try_motor = 0; // 0:none, 1:push, -1:pull
+int pathmode = 0;  // 0:else, 1:start, 2:receive, 3:try, 4~6:kick1~3, 7:change_RB
 
 void msgCallback(const sensor_msgs::Joy &msg)
 {
     joystick_R[0] = -msg.axes[JOY_X];
     joystick_R[1] = msg.axes[JOY_Y];
 
-    if (msg.buttons[JOY_OMEGA_L] > msg.buttons[JOY_OMEGA_R])    // rotation
+    if (msg.buttons[JOY_OMEGA_L] > msg.buttons[JOY_OMEGA_R]) // rotation
         omega = 1.0;
     else if (msg.buttons[JOY_OMEGA_L] < msg.buttons[JOY_OMEGA_R])
         omega = -1.0;
@@ -71,6 +77,34 @@ void msgCallback(const sensor_msgs::Joy &msg)
         else if (msg.buttons[MODE_3] == 1) // kick
             mode = 3;
     }
+
+    // pathmode
+    static kickflag = false;
+    if (msg.buttons[CHANGE] == 1)
+        kickflag = !kickflag;
+    else if (msg.buttons[START_K1] == 1)
+    {
+        if (kickflag)
+            pathmode = 4;
+        else
+            pathmode = 1;
+    }
+    else if (msg.buttons[RECEIVE_K2] == 1)
+    {
+        if (kickflag)
+            pathmode = 5;
+        else
+            pathmode = 2;
+    }
+    else if (msg.buttons[TRY_K3] == 1)
+    {
+        if (kickflag)
+            pathmode = 6;
+        else
+            pathmode = 3;
+    }
+    else
+        pathmode = 0;
 }
 
 void armCallback(const std_msgs::Int32MultiArray &msg)
@@ -134,11 +168,11 @@ int main(int argc, char **argv)
 
             if (flag == 2 || flag == 3)
             {
-                if (flagcount < looprate / 2)   // publishing flag
+                if (flagcount < looprate / 2) // publishing flag
                     flagcount++;
                 else
                 {
-                    flagcount = 0;  // stop publish
+                    flagcount = 0; // stop publish
                     flag = 0;
                 }
             }
@@ -146,10 +180,11 @@ int main(int argc, char **argv)
 
         // mode
         std_msgs::Int32MultiArray intarray_arm;
-        intarray_arm.data.resize(3);
+        intarray_arm.data.resize(4);
         intarray_arm.data[0] = flag;
         intarray_arm.data[1] = mode;
         intarray_arm.data[2] = try_motor;
+        intarray_arm.data[3] = pathmode;
         arm_mbed_pub.publish(intarray_arm);
 
         ros::spinOnce();

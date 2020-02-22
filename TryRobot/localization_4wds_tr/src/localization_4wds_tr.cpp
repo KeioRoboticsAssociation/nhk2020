@@ -11,6 +11,7 @@ int flag = 0;
 int mode = 0;
 float bno_theta = 0;
 float position[2] = {0, 0}; // [mm]
+float initialpos[2] = {-6150, 500};
 float wheelpos[4][2] = {0};
 float looprate_bno = 30.0f;    //[Hz]//////////////////
 
@@ -91,7 +92,7 @@ int main(int argc, char **argv)
     arg_n.getParam("frequency_bno", looprate_bno);/////////
 
     float vx, vy, vtheta;   // [m/s, rad/s]
-    float oldpos[3] = {0};  // [mm]
+    float oldpos[3] = {initialpos[0], initialpos[1], 0}; // [mm]
 
     ros::Rate loop_rate(looprate);
     while (ros::ok())
@@ -101,7 +102,7 @@ int main(int argc, char **argv)
 
         if (flag == 2)
         {
-            set_body_position(0, 0, bno_theta);
+            set_body_position(initialpos[0], initialpos[1], bno_theta);
         }
 
         set_body_position((wheelpos[0][0] + wheelpos[1][0] + wheelpos[2][0] + wheelpos[3][0]) / 4,
