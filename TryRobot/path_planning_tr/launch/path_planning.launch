@@ -1,0 +1,16 @@
+<launch>
+
+  <!--frequency [Hz]-->
+
+  <arg name="frequency" default="30" />
+  <arg name="zone" default="blue" />
+
+
+  <!--path_planning_node-->
+
+  <node pkg="path_planning_tr" name="path_planning" type="path_planning_node" output="screen">
+    <param name="frequency" value="$(arg frequency)" />
+    <param name = "zone" value = "$(arg zone)" />
+  </node>
+
+</launch>

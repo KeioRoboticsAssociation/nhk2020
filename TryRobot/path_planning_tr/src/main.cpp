@@ -1,8 +1,8 @@
 #include "ros/ros.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/Int32MultiArray.h"
-#include <tf/transform_listener.h>
-//#include <nav_msgs/Odometry.h>
+//#include <tf/transform_listener.h>
+#include <nav_msgs/Odometry.h>
 
 #include "path_planning.h"
 
@@ -43,23 +43,22 @@ F2: create csv Blue -> Red
 int armmode = 0;	// 2:reset
 int mode = 0;		// 0:start, 1:receive, 2~6:try1~5, 7~9:kick1~3
 int path_mode = 0;	// 0:none, 1:path1, 2:path2, ...LINE_NUM
-int getmode = 0;	// 0:else, 1:start, 2:receive, 3:try, 4~6:kick1~3, 7:change_RB
+int getmode = 0;	// 0:else, 1:start, 2:back, 3:try_point, 4~6:kick1~3, 7:break
 int trymode = 0;	// 0:else 1~5:try1~5
 bool forwardflag = true;
-bool redflag = true;
 float pos[3] = {0};	// [x,y,theta]
 
-void change_RB();
+void change_RB(std::string zone);
 void set_mode(int next);
-void csv_converter(string infilename);
+void csv_converter(std::string infilename);
 
-void odomCallback(const std_msgs::Float32MultiArray &msg)
+void odomCallback(const nav_msgs::Odometry &msg)
 {
     pos[0] = msg.pose.pose.position.x;
     pos[1] = msg.pose.pose.position.y;
 }
 
-void buttonCallback(const std_msgs::Float32MultiArray &msg)
+void buttonCallback(const std_msgs::Int32MultiArray &msg)
 {
 	armmode = msg.data[1];
 	getmode = msg.data[3];
@@ -77,9 +76,12 @@ int main(int argc, char **argv)
 
     ros::NodeHandle arg_n("~");
     int looprate = 30;      // Hz
-    arg_n.getParam("frequency", looprate);
+	std::string zonename;
+	arg_n.getParam("frequency", looprate);
+	arg_n.getParam("zone", zonename);
 
-    change_RB();
+	change_RB(zonename);
+	Matrix control(4, 1);
 
 	// tf listener
 	//////tf::TransformListener listener;
@@ -102,7 +104,6 @@ int main(int argc, char **argv)
 		*/
 
 		// pure_pursuit
-        Matrix control(4, 1);
         if (path_mode != 0)
         {
             control = path[path_mode - 1].pure_pursuit(pos[0], pos[1], forwardflag);
@@ -119,28 +120,39 @@ int main(int argc, char **argv)
 			floatarray.data[0] = control[1][1];
 			floatarray.data[1] = control[2][1];
 			floatarray.data[2] = control[3][1];
-			rogi_pub.publish(floatarray);
+			path_pub.publish(floatarray);
 		}
 
 		// change path
 		switch(getmode){
-		case 1:
-			set_mode(0);
+		case 1:	// start
+			if (mode == 1)
+				set_mode(trymode);
+			else
+				set_mode(1);
 			break;
-		case 2:
-			set_mode(1);
+		case 2:	// back
+			if (mode == 0)
+				set_mode(trymode);
+			else
+				set_mode(0);
 			break;
-		case 3:
-			set_mode(trymode + 1);
-			break;
-		case 4:case 5:case 6:
-			set_mode(trymode + 3);
+		case 3:	// try_point
 			trymode++;
 			if (trymode == 6)
 				trymode = 1;
 			break;
-		case 7:
-			change_RB();
+		case 4:case 5:case 6:	// kick1-3
+			set_mode(getmode + 3);
+			break;
+		case 7:	// no_path
+			path_mode = 0;
+			std_msgs::Float32MultiArray farray;
+			farray.data.resize(3);
+			farray.data[0] = 0;
+			farray.data[1] = 0;
+			farray.data[2] = control[3][1];
+			path_pub.publish(farray);
 			break;
 		}
 
@@ -149,18 +161,26 @@ int main(int argc, char **argv)
     }
 }
 
-void change_RB() {
-	for (int i = 0; i < LINE_NUM; i++) {
+void change_RB(std::string zone) {
+	using namespace std;
+	for (int i = 0; i < LINE_NUM; i++)
+	{
+
 		stringstream ss;
-		if (redflag) {
+		if (zone == "blue")
+		{ //ss << "/home/catkin_ws/src/nhk2020/TryRobot/path_planning/src/data_csv/path_point_blue" << i + 1 << ".csv";
 			ss << "data_csv/path_point_blue" << i + 1 << ".csv";
 		}
-		else {
+		else if (zone == "red")
+		{
 			ss << "data_csv/path_point_red" << i + 1 << ".csv";
+		}
+		else{
+			cerr << "err change_RB / filename" << endl;
+			exit(1);
 		}
 		path[i].set_point_csv(ss.str());
 	}
-	redflag = !redflag;
 }
 
 void set_mode(int next) {

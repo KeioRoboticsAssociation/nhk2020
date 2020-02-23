@@ -4,7 +4,7 @@
 
 /*********************** Param *************************/
 #define PI 3.141592f
-#define TRY_MOTOR_PERIOD 20 // (ms)
+#define TRY_MOTOR_PERIOD 50 // (ms)
 #define TRY_MOTOR_DUTY 0.3f
 #define KICK_WAIT_TIME_MS 0 // (ms)
 
@@ -189,11 +189,11 @@ void waittime_ms(int t)
     try_motor(Ms.getint[2], Ms.getint[0]);  // try_motor
     if (Ms.getint[0] != 1) //stop
     {
-      t_count += 10;
+      t_count += 20;
       if (Ms.getint[0] == 2) //reset
         set_offset();
     }
     get_angle();
-    wait_ms(10);
+    wait_ms(20);
   }
 }

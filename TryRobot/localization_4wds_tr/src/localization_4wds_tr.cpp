@@ -13,7 +13,6 @@ float bno_theta = 0;
 float position[2] = {0, 0}; // [mm]
 float initialpos[2] = {-6150, 500};
 float wheelpos[4][2] = {0};
-float looprate_bno = 30.0f;    //[Hz]//////////////////
 
 void set_body_position(float x_, float y_, float theta_);
 
@@ -32,8 +31,7 @@ void RF_Callback(const std_msgs::Float32MultiArray &msg)
 {
     static ros::Time last_time = ros::Time::now();
     ros::Time current_time = ros::Time::now();
-    float delta = msg.data[0] * 1000.0f * (current_time - last_time).toSec();   // [mm]
-    //float delta = msg.data[0] * 1000.0f / looprate_bno; // [mm/step]
+    float delta = msg.data[0] * 1000.0f * (current_time - last_time).toSec(); // [mm]
     wheelpos[0][0] -= delta * sin(bno_theta + msg.data[1]);
     wheelpos[0][1] += delta * cos(bno_theta + msg.data[1]);
     last_time = current_time;
@@ -43,7 +41,7 @@ void LF_Callback(const std_msgs::Float32MultiArray &msg)
 {
     static ros::Time last_time = ros::Time::now();
     ros::Time current_time = ros::Time::now();
-    float delta = msg.data[0] * 1000.0f * (current_time - last_time).toSec();   // [mm]
+    float delta = msg.data[0] * 1000.0f * (current_time - last_time).toSec(); // [mm]
     wheelpos[1][0] -= delta * sin(bno_theta + msg.data[1]);
     wheelpos[1][1] += delta * cos(bno_theta + msg.data[1]);
     last_time = current_time;
@@ -53,7 +51,7 @@ void LB_Callback(const std_msgs::Float32MultiArray &msg)
 {
     static ros::Time last_time = ros::Time::now();
     ros::Time current_time = ros::Time::now();
-    float delta = msg.data[0] * 1000.0f * (current_time - last_time).toSec();   // [mm]
+    float delta = msg.data[0] * 1000.0f * (current_time - last_time).toSec(); // [mm]
     wheelpos[2][0] -= delta * sin(bno_theta + msg.data[1]);
     wheelpos[2][1] += delta * cos(bno_theta + msg.data[1]);
     last_time = current_time;
@@ -63,7 +61,7 @@ void RB_Callback(const std_msgs::Float32MultiArray &msg)
 {
     static ros::Time last_time = ros::Time::now();
     ros::Time current_time = ros::Time::now();
-    float delta = msg.data[0] * 1000.0f * (current_time - last_time).toSec();   // [mm]
+    float delta = msg.data[0] * 1000.0f * (current_time - last_time).toSec(); // [mm]
     wheelpos[3][0] -= delta * sin(bno_theta + msg.data[1]);
     wheelpos[3][1] += delta * cos(bno_theta + msg.data[1]);
     last_time = current_time;
@@ -87,11 +85,23 @@ int main(int argc, char **argv)
     ros::Subscriber sub_RB = n.subscribe("data_RB", 100, RB_Callback);
 
     ros::NodeHandle arg_n("~");
-    int looprate = 30;      // Hz
+    int looprate = 30; // Hz
+    std::string zonename;
     arg_n.getParam("frequency", looprate);
-    arg_n.getParam("frequency_bno", looprate_bno);/////////
+    arg_n.getParam("zone", zonename);
 
-    float vx, vy, vtheta;   // [m/s, rad/s]
+    if (zonename == "blue")
+        initialpos[0] = -abs(initialpos[0]);
+    else if (zonename == "red")
+        initialpos[0] = abs(initialpos[0]);
+    else
+    {
+        std::cerr << "error zonename" << std::endl;
+        std::exit(1);
+    }
+    set_body_position(initialpos[0], initialpos[1], bno_theta);
+
+    float vx, vy, vtheta;                                // [m/s, rad/s]
     float oldpos[3] = {initialpos[0], initialpos[1], 0}; // [mm]
 
     ros::Rate loop_rate(looprate);
@@ -154,7 +164,8 @@ int main(int argc, char **argv)
     }
 }
 
-void set_body_position(float x_, float y_, float theta_){
+void set_body_position(float x_, float y_, float theta_)
+{
     position[0] = x_;
     position[1] = y_;
     for (int i = 0; i < 4; i++)

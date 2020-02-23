@@ -20,6 +20,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(path_planning_node src/path_plannig.cpp, src/main.cpp, src/path_planning.cpp, src/path_planning.h, src/matrix.cpp, src/matrix.h, src/csv_converter.cpp)
+add_executable(path_planning_node src/main.cpp src/path_planning.cpp src/path_planning.h src/matrix.cpp src/matrix.h src/csv_converter.cpp)
+#add_executable(path_planning_node src/path_planning.cpp, src/main.cpp, src/path_planning.cpp, src/matrix.cpp, src/csv_converter.cpp)
 add_dependencies(path_planning_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(path_planning_node ${catkin_LIBRARIES})

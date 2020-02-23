@@ -4,7 +4,7 @@
 
 /********************* parameter ************************/
 float stock_max = 10.0f;
-float Kpid[3] = {1.0, 0.0, 0.0};
+float Kpid[3] = {0.1, 0.0, 0.0};
 /********************************************************/
 
 extern float theta_1, theta_2, theta_3, theta_4;
@@ -41,11 +41,11 @@ void armCallback(const std_msgs::Int32MultiArray &msg)
     mode = msg.data[1];
 }
 
-void pathCallback(const std_msgs::Int32MultiArray &msg)
+void pathCallback(const std_msgs::Float32MultiArray &msg)
 {
     path_vx = msg.data[0];
     path_vy = msg.data[1];
-    ref_theta = mag.data[2];
+    ref_theta = msg.data[2];
 }
 
 int main(int argc, char **argv)
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
         // calc omega
         ref_theta += joy_omega / (float)looprate;
         loop_omega = theta_PID(bno_theta, ref_theta, (float)looprate);
-        //loop_omega = joy_omega;////////////
+        // loop_omega = joy_omega;////////////
         // calc velocity
         loop_vx = (joy_vx + path_vx) / (float)looprate;
         loop_vy = (joy_vy + path_vy) / (float)looprate;

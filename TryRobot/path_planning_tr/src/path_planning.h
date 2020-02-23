@@ -7,7 +7,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include <queue>
+#include <cmath>
 #include <algorithm>
 #include "matrix.h"
 
@@ -21,7 +21,7 @@
 /******************** class ************************/
 class Path {
 private:
-	float max_accel = 10.0, max_vel = 10;	// m/(s^2), m/s
+	float max_accel = 1.0, max_vel = 1;	// m/(s^2), m/s
 	float max_initial_speed = 0.05;	// [m/s]
 	float position[2] = { 0,0 };	// [x,y]
 	float ref_t = 1;

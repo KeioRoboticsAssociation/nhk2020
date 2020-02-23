@@ -1,4 +1,7 @@
 <launch>
+  <!--red or blue zone-->
+  <arg name="zone" default="blue"/>
+
   <!--select mbed device-->
   <arg name="ARM" default="true"/>
   <arg name="RF" default="true"/>
@@ -25,8 +28,14 @@
   <!--localization-->
   <include file="$(find localization_4wds_tr)/launch/localization_4wds_tr.launch">
   <arg name="frequency" value="$(arg control_frequency)" />
+  <arg name="zone" value="$(arg zone)" />
   </include>
 
+  <!--path_planning-->
+  <include file="$(find path_planning_tr)/launch/path_planning.launch">
+  <arg name="frequency" value="$(arg control_frequency)" />
+  <arg name="zone" value="$(arg zone)" />
+  </include>
 
   <!--mbed serial-->
   <!--wheel-->

@@ -8,21 +8,19 @@
 /***************** joystick number ********************/
 #define JOY_X 2
 #define JOY_Y 3
-#define JOY_OMEGA_R 5
-#define JOY_OMEGA_L 4
-#define TRY_MOTOR_R 7
-#define TRY_MOTOR_L 6
+#define JOY_OMEGA 4
+#define TRY_MOTOR 0
 #define FLAG_1 11
 #define FLAG_2 10
 #define FLAG_3 9
-#define MODE_1 0
-#define MODE_2 1
-#define MODE_3 2
-#define CHANGE
-#define START_K1
-#define RECEIVE_K2
-#define TRY_K3
-#define RED_BLUE 
+#define MODE_1 6
+#define MODE_2 7
+#define MODE_3 4
+#define CHANGE 3
+#define START_K1 0
+#define BACK_K2 1
+#define TRYPOINT_K3 2
+#define NO_PATH 5
 /******************************************************/
 
 #define PI 3.141592f
@@ -34,27 +32,17 @@ int flag = 0;      // 0:not publish, 1:stop, 2:reset, 3:enable
 int mode = 0;      // 0:others, 1:catch, 2:try, 3:kick
                    // send arm mbed (mbedreply->0)
 int try_motor = 0; // 0:none, 1:push, -1:pull
-int pathmode = 0;  // 0:else, 1:start, 2:receive, 3:try, 4~6:kick1~3, 7:change_RB
+int pathmode = 0;  // 0:else, 1:start, 2:back, 3:try_point, 4~6:kick1~3, 7:break
 
 void msgCallback(const sensor_msgs::Joy &msg)
 {
+    // joystick
     joystick_R[0] = -msg.axes[JOY_X];
     joystick_R[1] = msg.axes[JOY_Y];
-
-    if (msg.buttons[JOY_OMEGA_L] > msg.buttons[JOY_OMEGA_R]) // rotation
-        omega = 1.0;
-    else if (msg.buttons[JOY_OMEGA_L] < msg.buttons[JOY_OMEGA_R])
-        omega = -1.0;
-    else
-        omega = 0;
+    omega = msg.axes[JOY_OMEGA];
 
     // try_motor
-    if (msg.buttons[TRY_MOTOR_L] > msg.buttons[TRY_MOTOR_R])
-        try_motor = 1;
-    else if (msg.buttons[TRY_MOTOR_L] < msg.buttons[TRY_MOTOR_R])
-        try_motor = -1;
-    else
-        try_motor = 0;
+    try_motor = (int)msg.axes[TRY_MOTOR];
 
     // flag
     if (msg.buttons[FLAG_1] == 1) // stop
@@ -79,7 +67,7 @@ void msgCallback(const sensor_msgs::Joy &msg)
     }
 
     // pathmode
-    static kickflag = false;
+    static bool kickflag = false;
     if (msg.buttons[CHANGE] == 1)
         kickflag = !kickflag;
     else if (msg.buttons[START_K1] == 1)
@@ -89,20 +77,22 @@ void msgCallback(const sensor_msgs::Joy &msg)
         else
             pathmode = 1;
     }
-    else if (msg.buttons[RECEIVE_K2] == 1)
+    else if (msg.buttons[BACK_K2] == 1)
     {
         if (kickflag)
             pathmode = 5;
         else
             pathmode = 2;
     }
-    else if (msg.buttons[TRY_K3] == 1)
+    else if (msg.buttons[TRYPOINT_K3] == 1)
     {
         if (kickflag)
             pathmode = 6;
         else
             pathmode = 3;
     }
+    else if (msg.buttons[NO_PATH] == 1)
+        pathmode = 7;
     else
         pathmode = 0;
 }

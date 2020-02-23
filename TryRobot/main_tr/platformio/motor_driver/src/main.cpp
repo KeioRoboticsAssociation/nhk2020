@@ -22,6 +22,9 @@ diff_t[1] = -1 * (transform_gear_into_encoder(target_angle, 1) - en_count_t); //
 #include "motor.h"
 #include "mbedserial.h"
 
+#define MAXDUTY_W 0.85F
+#define MAXDUTY_T 0.6F
+
 Serial pc(USBTX, USBRX, 115200);
 Ticker ticker;
 #define SUMPLING_TIME_US 10000 //タイマー割り込み周期 kHzオーダーつまり1000が理想
@@ -34,7 +37,7 @@ DigitalOut LED(LED3);
 DigitalOut OE(PF_1, 0); // レベルシフタを有効化
 
 //----------------------------------------Motor---------------------------------------------------
-#define STYLE_LB //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
+#define STYLE_LF //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
 
 #ifdef STYLE_RF
 //MotorA
@@ -130,11 +133,11 @@ bool initflag = true;
 #endif
 
 #ifdef STYLE_RF
-bool initflag = false; //Z相による初期化が済んでいるか否か
+bool initflag = true; //Z相による初期化が済んでいるか否か
 #endif
 
 #ifdef STYLE_LF
-bool initflag = false; //Z相による初期化が済んでいるか否か
+bool initflag = true; //Z相による初期化が済んでいるか否か
 #endif
 
 bool ROSflag = false; //ROSのターマー割り込みを許可するか
@@ -382,10 +385,10 @@ void PID_t(void)
   delta_v = Kp_t * P + I_value + D_value;
   v_t = transform_encoder_into_gear(delta_v, 1); //エンコーダーの差分から回転テーブルの差分に変換する
   table_speed = v_t / MAX_TABLE_SPEED;           //-1~1のfloat値に変換(abs0.9以上 or abs0.02未満の場合はBrakeになるが)
-  if (table_speed >= 0.88)
-    table_speed = 0.88;
-  else if (table_speed <= -0.88)
-    table_speed = -0.88;
+  if (table_speed >= MAXDUTY_T)
+    table_speed = MAXDUTY_T;
+  else if (table_speed <= -MAXDUTY_T)
+    table_speed = -MAXDUTY_T;
   Table.setSpeed(table_speed);
 }
 
@@ -413,10 +416,10 @@ void PID_w(void)
   wheel_speed = v_w / MAX_WHEEL_SPEED; //-1~1のfloat値に変換(abs0.9以上 or abs0.02未満の場合はBrakeになるが)
   // とりあえずエンコーダは読まないでduty比を入力
   //wheel_speed = target_speed * 0.1F;ここでPIDをあきらめてる
-  if (wheel_speed >= 0.88)
-    wheel_speed = 0.88F;
-  else if (wheel_speed <= -0.88)
-    wheel_speed = -0.88F;
+  if (wheel_speed >= MAXDUTY_W)
+    wheel_speed = MAXDUTY_W;
+  else if (wheel_speed <= -MAXDUTY_W)
+    wheel_speed = -MAXDUTY_W;
   Wheel.setSpeed(wheel_speed);
   //pc.printf("%d\n", (int)(wheel_speed * 100)); //割る100するとwheel_speedが得られる
   //pc.printf("%f\n", wheel_speed);
