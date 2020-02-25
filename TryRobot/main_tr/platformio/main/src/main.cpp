@@ -86,6 +86,7 @@ int main()
 void Push()
 {
   set_offset();
+  //bno.reset();
   myled = 1;
 }
 
@@ -194,6 +195,6 @@ void waittime_ms(int t)
         set_offset();
     }
     get_angle();
-    wait_ms(20);
+    wait_us(20000);
   }
 }
