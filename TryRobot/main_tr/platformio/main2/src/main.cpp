@@ -7,6 +7,7 @@
 #define TRY_MOTOR_PERIOD 50 // (ms)
 #define TRY_MOTOR_DUTY 0.3f
 #define KICK_WAIT_TIME_MS 0 // (ms)
+#define RECOVER_TIMEOUT 50  // (ms)
 
 float bno_euler_scale = 1;
 float bno_offset = 0.0f; // (rad)
@@ -16,9 +17,7 @@ float bno_angle = 0.0f;  // old - offset (rad)
 /*******************************************************/
 
 Serial pc(USBTX, USBRX, 115200);
-I2C ifaceI2C(PB_7, PB_8); // SDA,ACL
-BOARDC_BNO055 bno(&ifaceI2C);
-Ticker ticker;
+BOARDC_BNO055 bno(PB_7, PB_8); // SDA,SCL
 Mbedserial Ms(pc);
 PwmOut pwm_try(PA_8);
 DigitalOut phase_try(PC_11);
@@ -87,9 +86,7 @@ int main()
 
 void Push()
 {
-  //set_offset();
-  bno.resetInterrupt();
-  bno.soft_reset();
+  set_offset();
   myled = 1;
 }
 
@@ -100,7 +97,6 @@ void Pull()
 
 void bno_init()
 {
-  ifaceI2C.frequency(40000);
   bno.initialize();
   bno_euler_scale = bno.getEulerScale();
   get_angle();
@@ -168,8 +164,8 @@ void kickandhold()
 
 void serial_interrupt()
 {
-  //get_angle();
   // send replyflag and bno_angle
+  bno.recover(RECOVER_TIMEOUT);
   static bool writeflag = true;
   if (writeflag)
     Ms.float_write(&bno_angle, 1);

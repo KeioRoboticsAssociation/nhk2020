@@ -135,6 +135,11 @@ protected:
     char lastError;
     char lastLength;
 public:
+    PinName *sda_tx_pin;
+    PinName *scl_rx_pin;
+    DigitalIn *din1;
+    DigitalIn *din2;
+    Timer timer;
     char getNowPage();
     char getLastError();
     char getLastLength();
@@ -143,6 +148,8 @@ public:
     virtual char rrc(bool isPage1, char startRegAddr, unsigned char *receiveBytes, char length);
     virtual char wr(bool isPage1, char regAddr, char wBytes);
     virtual char wrc(bool isPage1, char startRegAddr, char *Bytes, char length);
+    virtual void recover(){};
+    virtual void recover(int timeout_ms){};
 };
  
 class BNO055_UART_CTRL : public BNO055_CTRL{
@@ -178,13 +185,14 @@ public:
     virtual char rrc(bool isPage1, char startRegAddr, unsigned char *receiveBytes, char length);
     virtual char wr(bool isPage1, char regAddr, char wBytes);
     virtual char wrc(bool isPage1, char startRegAddr, char *Bytes, char length);
+    virtual void recover();
+    virtual void recover(int timeout_ms);
 };
  
 class BOARDC_BNO055{
 public:
-    BOARDC_BNO055(PinName tx, PinName rx);
     BOARDC_BNO055(RawSerial *uart);
-    BOARDC_BNO055(PinName scl, PinName sda, char addr=BNO055_I2C_DEFADDR, unsigned int freq=100000);
+    BOARDC_BNO055(PinName sda_tx, PinName scl_rx, bool i2c = true, unsigned int freq=100000, char addr=BNO055_I2C_DEFADDR);
     BOARDC_BNO055(I2C *iic, char addr=BNO055_I2C_DEFADDR, unsigned int freq=100000);
     ~BOARDC_BNO055();
  
@@ -458,6 +466,9 @@ public:
  
     char getAccAnyMotionSetting();
     char setAccAnyMotionSetting(char setting);
+
+    void recover();
+    void recover(int timeout_ms);
 };
  
 #endif

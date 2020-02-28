@@ -461,6 +461,7 @@ BNO055_I2C_CTRL::BNO055_I2C_CTRL(I2C* iic, char addr, unsigned int freq){
     i2c_writeAddr = addr << 1;
     i2c_readAddr = i2c_writeAddr + 1;
     i2c_freq = freq;
+    iface->frequency(freq);
     page1 = true;
     ary = new char[2];
     memset(ary, 0, 2);
@@ -561,6 +562,29 @@ char BNO055_I2C_CTRL::wrc(bool isPage1, char startRegAddr, char *Bytes, char len
  
     return Bytes[0];
 }
+
+/* ==================================================================
+ * <I2C>
+ * バス開放
+ */
+void BNO055_I2C_CTRL::recover(){
+    if(din1->read() == 0){
+        delete iface;
+        iface = new I2C(*sda_tx_pin, *scl_rx_pin);
+        iface->frequency(i2c_freq);
+    }
+}
+
+void BNO055_I2C_CTRL::recover(int timeout_ms){
+    if(din1->read() == 1){
+        timer.reset();
+        timer.start();
+    }else if(timer.read_ms() > timeout_ms){
+        recover();
+        timer.reset();
+        timer.start();
+    }
+}
  
 /* ==================================================================
  * <I2C>
@@ -589,25 +613,6 @@ void BNO055_I2C_CTRL::init(){
  
 /* ==================================================================
  * コンストラクタ (オーバーロード+3)
- * UARTで使用する際のコンストラクタ：ピン別名を指定する
- */
-BOARDC_BNO055::BOARDC_BNO055(PinName tx, PinName rx){
-    ctrl = new BNO055_UART_CTRL(new RawSerial(tx, rx));
- 
-    scaleACC = 0.01f; // = 1 / 100
-    scaleMAG = 0.0625f; // = 1 / 16
-    scaleGYRO = 0.0625f; // = 1 / 16
-    scaleEuler = 0.0625f; // = 1 / 16
-    scaleTEMP = 1.0f;
-    scaleLIA = scaleACC;
-    scaleGV = scaleACC;
-    scaleQuaternion = 0.00006103515; // = 1 / (2^14)
- 
-    clkExt = false;
-}
- 
-/* ==================================================================
- * コンストラクタ (オーバーロード+3)
  * UARTで使用する際のコンストラクタ：RawSerialクラスのインスタンスを指定する
  */
 BOARDC_BNO055::BOARDC_BNO055(RawSerial *uart){
@@ -627,11 +632,19 @@ BOARDC_BNO055::BOARDC_BNO055(RawSerial *uart){
  
 /* ==================================================================
  * コンストラクタ (オーバーロード+3)
- * I2Cで使用する際のコンストラクタ：ピン別名を指定する
+ * I2CorUARTで使用する際のコンストラクタ：ピン別名を指定する
  */
-BOARDC_BNO055::BOARDC_BNO055(PinName sda, PinName scl, char addr, unsigned int freq){
-    ctrl = new BNO055_I2C_CTRL(new I2C(sda, scl), addr, freq);
- 
+BOARDC_BNO055::BOARDC_BNO055(PinName sda_tx, PinName scl_rx, bool i2c, unsigned int freq, char addr){
+    if(i2c)
+        ctrl = new BNO055_I2C_CTRL(new I2C(sda_tx, scl_rx), addr, freq);
+    else
+        ctrl = new BNO055_UART_CTRL(new RawSerial(sda_tx, scl_rx));
+
+    ctrl->din1 = new DigitalIn(sda_tx);
+    ctrl->din2 = new DigitalIn(scl_rx);
+    *(ctrl->sda_tx_pin) = sda_tx;
+    *(ctrl->scl_rx_pin) = scl_rx;
+
     scaleACC = 0.01f; // = 1 / 100
     scaleMAG = 0.0625f; // = 1 / 16
     scaleGYRO = 0.0625f; // = 1 / 16
@@ -698,7 +711,9 @@ char BOARDC_BNO055::initialize(bool resetIface){
     if(!setUNIT_SEL(0x00)) return -3;
  
     //動作モード設定(9軸Fusionモード)
-    if(!setOperation_Fusion_NDOF()) return -4;
+    //if(!setOperation_Fusion_NDOF()) return -4;
+    //動作モード設定(6軸(加速度、角速度)Fusionモード)
+    if(!setOperation_Fusion_IMU()) return -4;
  
     return 0;
 }
@@ -3915,4 +3930,16 @@ char BOARDC_BNO055::getAccAnyMotionSetting(){
  */
 char BOARDC_BNO055::setAccAnyMotionSetting(char setting){
     return ctrl->wr(1, BNO055P1_GYR_AM_SET, setting);
+}
+
+
+/* ==================================================================
+ * I2Cバス開放
+ */
+void BOARDC_BNO055::recover(){
+    ctrl->recover();
+}
+
+void BOARDC_BNO055::recover(int timeout_ms){
+    ctrl->recover(timeout_ms);
 }
