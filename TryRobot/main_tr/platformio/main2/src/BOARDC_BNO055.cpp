@@ -570,7 +570,7 @@ char BNO055_I2C_CTRL::wrc(bool isPage1, char startRegAddr, char *Bytes, char len
 void BNO055_I2C_CTRL::recover(){
     if(din1->read() == 0){
         delete iface;
-        iface = new I2C(*sda_tx_pin, *scl_rx_pin);
+        iface = new I2C(sda_tx_pin, scl_rx_pin);
         iface->frequency(i2c_freq);
     }
 }
@@ -642,8 +642,8 @@ BOARDC_BNO055::BOARDC_BNO055(PinName sda_tx, PinName scl_rx, bool i2c, unsigned 
 
     ctrl->din1 = new DigitalIn(sda_tx);
     ctrl->din2 = new DigitalIn(scl_rx);
-    *(ctrl->sda_tx_pin) = sda_tx;
-    *(ctrl->scl_rx_pin) = scl_rx;
+    (ctrl->sda_tx_pin) = sda_tx;
+    (ctrl->scl_rx_pin) = scl_rx;
 
     scaleACC = 0.01f; // = 1 / 100
     scaleMAG = 0.0625f; // = 1 / 16

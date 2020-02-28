@@ -4,10 +4,10 @@
 
   <!--select mbed device-->
   <arg name="ARM" default="true"/>
-  <arg name="RF" default="false"/>
-  <arg name="LF" default="false"/>
-  <arg name="LB" default="false"/>
-  <arg name="RB" default="false"/>
+  <arg name="RF" default="true"/>
+  <arg name="LF" default="true"/>
+  <arg name="LB" default="true"/>
+  <arg name="RB" default="true"/>
 
   <!--control_frequency [Hz]-->
 

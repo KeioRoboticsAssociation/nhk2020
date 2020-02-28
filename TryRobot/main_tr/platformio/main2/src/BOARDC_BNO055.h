@@ -135,8 +135,8 @@ protected:
     char lastError;
     char lastLength;
 public:
-    PinName *sda_tx_pin;
-    PinName *scl_rx_pin;
+    PinName sda_tx_pin;
+    PinName scl_rx_pin;
     DigitalIn *din1;
     DigitalIn *din2;
     Timer timer;
