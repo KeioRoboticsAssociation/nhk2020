@@ -6,7 +6,7 @@
 #define PI 3.141592f
 #define TRY_MOTOR_PERIOD 50 // (ms)
 #define TRY_MOTOR_DUTY 0.3f
-#define KICK_WAIT_TIME_MS 0 // (ms)
+#define KICK_WAIT_TIME_MS 40 // (ms)
 #define RECOVER_TIMEOUT 50  // (ms)
 
 float bno_euler_scale = 1;
@@ -115,12 +115,14 @@ void get_angle()
   short dataBox[3] = {0};
   // get data
   bno.getEulerDataAll(dataBox[2], dataBox[1], dataBox[0]);
-  angle_raw = (float)dataBox[2] * bno_euler_scale * PI / 180.0f;
+  angle_raw = -(float)dataBox[2] * bno_euler_scale * PI / 180.0f;
   if (angle_raw + PI * (float)(n_pi - 1) > bno_old)
     n_pi -= 2;
   else if (angle_raw + PI * (float)(n_pi + 1) < bno_old)
     n_pi += 2;
-  bno_old = angle_raw + PI * (float)n_pi;
+  float bno_old_temp = angle_raw + PI * (float)n_pi;
+  if(abs(bno_old_temp-bno_old)<PI/9)
+    bno_old = bno_old_temp;
   bno_angle = bno_old - bno_offset;
 }
 
@@ -165,13 +167,14 @@ void kickandhold()
 void serial_interrupt()
 {
   // send replyflag and bno_angle
-  bno.recover(RECOVER_TIMEOUT);
+  //bno.recover(RECOVER_TIMEOUT);
   static bool writeflag = true;
   if (writeflag)
     Ms.float_write(&bno_angle, 1);
   else
     Ms.int_write(&replyflag, 1);
   writeflag = !writeflag;
+  bno.recover();
 }
 
 void waittime_ms(int t)

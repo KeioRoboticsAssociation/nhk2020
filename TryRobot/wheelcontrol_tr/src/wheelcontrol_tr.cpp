@@ -143,6 +143,8 @@ float theta_PID(float now, float ref, float sumpling_freq)
     static float stock_ = 0;
     static float olddiff = 0;
     float diff = ref - now;
+    if(abs(diff) < 3.141592f/60.0f)
+        diff = 0;
     stock_ += (diff + olddiff) / (sumpling_freq * 2);
     if (stock_ > stock_max)
         stock_ = stock_max;
