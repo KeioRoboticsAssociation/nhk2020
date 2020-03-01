@@ -121,7 +121,7 @@ void get_angle()
   else if (angle_raw + PI * (float)(n_pi + 1) < bno_old)
     n_pi += 2;
   float bno_old_temp = angle_raw + PI * (float)n_pi;
-  if(abs(bno_old_temp-bno_old)<PI/9)
+  if(abs(bno_old_temp-bno_old) < PI/9 || bno_old_temp == 0.0f)
     bno_old = bno_old_temp;
   bno_angle = bno_old - bno_offset;
 }
@@ -167,14 +167,14 @@ void kickandhold()
 void serial_interrupt()
 {
   // send replyflag and bno_angle
-  //bno.recover(RECOVER_TIMEOUT);
   static bool writeflag = true;
   if (writeflag)
     Ms.float_write(&bno_angle, 1);
   else
     Ms.int_write(&replyflag, 1);
   writeflag = !writeflag;
-  bno.recover();
+  bno.recover(RECOVER_TIMEOUT);
+  //bno.recover();
 }
 
 void waittime_ms(int t)
