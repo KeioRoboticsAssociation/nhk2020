@@ -11,11 +11,11 @@ extern float theta_1, theta_2, theta_3, theta_4;
 extern float target_speed_1, target_speed_2, target_speed_3, target_speed_4;
 void wheel_control(float, float, float, float);
 
-float bno_theta = 0;
+float bno_theta = 0, ref_theta = 0;
 float loop_vx = 0, loop_vy = 0, loop_omega = 0;
 float loop_vx_old = 0, loop_vy_old = 0, loop_omega_old = 0;
 float joy_vx = 0, joy_vy = 0, joy_omega = 0;
-float path_vx = 0, path_vy = 0, path_omega = 0;
+float path_vx = 0, path_vy = 0;
 
 int flag = 0;
 int mode = 0;
@@ -45,8 +45,7 @@ void pathCallback(const std_msgs::Float32MultiArray &msg)
 {
     path_vx = msg.data[0];
     path_vy = msg.data[1];
-    path_omega = msg.data[2] - bno_theta;
-    //path_omega *= path_omega;
+    ref_theta = msg.data[2];
 }
 
 int main(int argc, char **argv)
@@ -66,7 +65,7 @@ int main(int argc, char **argv)
 
     ros::NodeHandle arg_n("~");
     int looprate = 30;           // Hz
-    float accel[2] = {0.2, 0.8}; // [vel, omega]
+    float accel[2] = {0.2, 0.2}; // [vel, omega]
     arg_n.getParam("frequency", looprate);
     arg_n.getParam("accel_xy", accel[0]);
     arg_n.getParam("accel_theta", accel[1]);
@@ -77,16 +76,21 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(looprate);
     while (ros::ok())
     {
+        // calc omega
+        ref_theta += joy_omega / (float)looprate;
+        if(flag == 2) // reset
+            ref_theta = 0;
+        loop_omega = theta_PID(bno_theta, ref_theta, (float)looprate);
+        // loop_omega = joy_omega;////////////
+        // calc velocity
         loop_vx = (joy_vx + path_vx) / (float)looprate;
         loop_vy = (joy_vy + path_vy) / (float)looprate;
-        loop_omega = (joy_omega + path_omega) / (float)looprate;
         if (flag == 1) //stop
         {
             loop_vx = 0;
             loop_vy = 0;
             loop_omega = 0;
         }
-
         // calc accel
         calc_accel(loop_vx, loop_vx_old, accel[0]);
         calc_accel(loop_vy, loop_vy_old, accel[0]);
