@@ -46,6 +46,7 @@ int main()
     else if (modezeroflag)
     {
       // mode-task
+      myled = 1;
       modezeroflag = false;
       replyflag = 0;
       waittime_ms(500);
@@ -65,6 +66,7 @@ int main()
         break;
       }
       replyflag = 1;
+      myled = 0;
     }
     waittime_ms(30);
   }

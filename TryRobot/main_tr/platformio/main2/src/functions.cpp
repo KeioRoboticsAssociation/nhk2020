@@ -80,11 +80,11 @@ void try_motor(float degree, int time_ms)
 {
     for (int i = 0; i < time_ms; i += 50)
     {
-        servo1.Moveto(servo_angle + (degree - servo_angle) * (float)i / (float)time_ms);
-        servo2.Moveto(servo_angle + (degree - servo_angle) * (float)i / (float)time_ms);
+        servo1.MoveTo(servo_angle + (degree - servo_angle) * (float)i / (float)time_ms);
+        servo2.MoveTo(servo_angle + (degree - servo_angle) * (float)i / (float)time_ms);
         waittime_ms(50);
     }
-    servo1.moveto(degree);
-    servo2.moveto(degree);
+    servo1.MoveTo(degree);
+    servo2.MoveTo(degree);
     servo_angle = degree;
 }

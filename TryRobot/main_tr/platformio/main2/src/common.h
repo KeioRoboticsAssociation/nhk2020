@@ -8,16 +8,6 @@
 #include "mbedserial.h"
 //#include <math.h>
 
-extern Serial pc;
-extern BOARDC_BNO055 bno; // SDA,SCL
-extern RDS5160Servo servo1;
-extern RDS5160Servo servo2;
-extern DigitalOut kick1;
-extern DigitalOut kick1_2;
-extern DigitalOut kick2;
-extern DigitalOut kick2_2;
-extern DigitalOut myled;
-
 /*********************** Param *************************/
 #define PI 3.141592f
 #define TRY_MOTOR_PERIOD 50 // (ms)
@@ -27,18 +17,7 @@ extern DigitalOut myled;
 #define TRY_MOTOR_ANGLE1 -80    // (degree)
 #define TRY_MOTOR_ANGLE2 60
 
-extern float bno_angle;  // old - offset (rad)
-
-/******************* Function *************************/
-
-void bno_init();
-void set_offset();
-void get_angle();
-void try_motor(float degree, int time_ms);
-void kickandhold();
-void waittime_ms(int t);
-
-/*******************************************************/
+/******************** Class ***************************/
 
 // servo PWM:500us-2500us, 270 degree
 class RDS5160Servo
@@ -57,5 +36,28 @@ public:
 
     void MoveTo(float degree);
 };
+
+/******************* Instance *************************/
+
+extern Serial pc;
+extern BOARDC_BNO055 bno; // SDA,SCL
+extern RDS5160Servo servo1;
+extern RDS5160Servo servo2;
+extern DigitalOut kick1;
+extern DigitalOut kick1_2;
+extern DigitalOut kick2;
+extern DigitalOut kick2_2;
+extern DigitalOut myled;
+
+extern float bno_angle;  // old - offset (rad)
+
+/******************* Function *************************/
+
+void bno_init();
+void set_offset();
+void get_angle();
+void try_motor(float degree, int time_ms);
+void kickandhold();
+void waittime_ms(int t);
 
 #endif

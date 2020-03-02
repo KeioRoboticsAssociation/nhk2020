@@ -4,7 +4,7 @@
 
 /********************* parameter ************************/
 float stock_max = 10.0f;
-float Kpid[3] = {0.1, 0.0, 0.0};
+float Kpid[3] = {0.1, 0.001, 0.008};
 /********************************************************/
 
 extern float theta_1, theta_2, theta_3, theta_4;
@@ -25,9 +25,9 @@ float theta_PID(float now, float ref, float sumpling_freq);
 
 void joyCallback(const std_msgs::Float32MultiArray &msg)
 {
-    joy_vx = msg.data[0] * 0.8f;
-    joy_vy = msg.data[1] * 0.8f;
-    joy_omega = msg.data[2] * 0.2f;
+    joy_vx = msg.data[0] * 1.0f;
+    joy_vy = msg.data[1] * 1.0f;
+    joy_omega = msg.data[2] * 0.7f;
 }
 
 void bnoCallback(const std_msgs::Float32MultiArray &msg)
@@ -78,6 +78,8 @@ int main(int argc, char **argv)
     {
         // calc omega
         ref_theta += joy_omega / (float)looprate;
+        if(flag == 2) // reset
+            ref_theta = 0;
         loop_omega = theta_PID(bno_theta, ref_theta, (float)looprate);
         // loop_omega = joy_omega;////////////
         // calc velocity
@@ -143,7 +145,7 @@ float theta_PID(float now, float ref, float sumpling_freq)
     static float stock_ = 0;
     static float olddiff = 0;
     float diff = ref - now;
-    if(abs(diff) < 3.141592f/60.0f)
+    if(abs(diff) < 3.141592f/120.0f)
         diff = 0;
     stock_ += (diff + olddiff) / (sumpling_freq * 2);
     if (stock_ > stock_max)

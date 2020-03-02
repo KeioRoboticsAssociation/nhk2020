@@ -12,7 +12,7 @@
 #include "matrix.h"
 
 //parameter
-#define PURSUIT_AIM 0.15F;
+#define PURSUIT_AIM 0.5F;
 
 #ifndef PI
 #define PI 3.141592F
@@ -21,7 +21,7 @@
 /******************** class ************************/
 class Path {
 private:
-	float max_accel = 1.0, max_vel = 1;	// m/(s^2), m/s
+	float max_accel = 0.05, max_vel = 0.5;	// m/(s^2), m/s
 	float max_initial_speed = 0.05;	// [m/s]
 	float position[2] = { 0,0 };	// [x,y]
 	float ref_t = 1;

@@ -56,6 +56,7 @@ void odomCallback(const nav_msgs::Odometry &msg)
 {
     pos[0] = msg.pose.pose.position.x;
     pos[1] = msg.pose.pose.position.y;
+	//ROS_INFO("[%.1f, %.1f]", pos[0],pos[1]);////////////
 }
 
 void buttonCallback(const std_msgs::Int32MultiArray &msg)
@@ -103,6 +104,14 @@ int main(int argc, char **argv)
 		pos[1] = transform.getOrigin().y();
 		*/
 
+		// reset
+		if(armmode == 2){
+			mode = 0;
+			path_mode = 0;
+			getmode = 7;
+			//try_mode = 1;
+		}
+
 		// pure_pursuit
         if (path_mode != 0)
         {
@@ -110,7 +119,7 @@ int main(int argc, char **argv)
 			float tryflag = 0;
 			if (forwardflag)
 			{
-                if (control[4][1] >= path[path_mode - 1].pnum - 0.03)
+                if (control[4][1] >= path[path_mode - 1].pnum - 0.2)
                     path_mode = 0;
 				if (2 <= path_mode && path_mode <= 6)	// tryflag
 				{
@@ -120,7 +129,7 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				if (control[4][1] <= 1.03)
+				if (control[4][1] <= 1.2)
                     path_mode = 0;
             }
 			std_msgs::Float32MultiArray floatarray;

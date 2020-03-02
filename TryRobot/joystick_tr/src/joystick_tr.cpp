@@ -8,8 +8,8 @@
 /***************** joystick number ********************/
 #define JOY_X 2
 #define JOY_Y 3
-#define JOY_OMEGA 4
-#define TRY_MOTOR 0
+#define JOY_OMEGA 0
+#define TRY_MOTOR 4
 #define FLAG_1 11
 #define FLAG_2 10
 #define FLAG_3 9
