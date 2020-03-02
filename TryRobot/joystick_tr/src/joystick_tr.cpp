@@ -14,8 +14,8 @@
 #define FLAG_2 10
 #define FLAG_3 9
 #define MODE_1 6
-#define MODE_2 7
-#define MODE_3 4
+#define MODE_2 4
+#define MODE_3 7
 #define CHANGE 3
 #define START_K1 0
 #define BACK_K2 1
@@ -27,9 +27,10 @@
 
 float joystick_R[6] = {0};
 float omega = 0.0;
+float path_try_flag = 0;
 int flag = 0;      // 0:not publish, 1:stop, 2:reset, 3:enable
                    // (1->button->3, 2->while->0, 3->while->0)
-int mode = 0;      // 0:others, 1:catch, 2:try, 3:kick
+int mode = 0;      // 0:others, 1:try, 2:kick, 3:
                    // send arm mbed (mbedreply->0)
 int try_motor = 0; // 0:none, 1:push, -1:pull
 int pathmode = 0;  // 0:else, 1:start, 2:back, 3:try_point, 4~6:kick1~3, 7:break
@@ -58,13 +59,17 @@ void msgCallback(const sensor_msgs::Joy &msg)
     // mode
     if (mode == 0) // others
     {
-        if (msg.buttons[MODE_1] == 1) // catch
+        if (msg.buttons[MODE_1] == 1)
             mode = 1;
-        else if (msg.buttons[MODE_2] == 1) // try
+        else if (msg.buttons[MODE_2] == 1)
             mode = 2;
-        else if (msg.buttons[MODE_3] == 1) // kick
+        else if (msg.buttons[MODE_3] == 1)
             mode = 3;
+        else if(path_try_flag > 1) // try_flag
+            mode = 1;
     }
+    else
+        path_try_flag = 0;
 
     // pathmode
     static bool kickflag = false;
@@ -117,6 +122,11 @@ void armCallback(const std_msgs::Int32MultiArray &msg)
     }
 }
 
+void pathCallback(const std_msgs::Float32MultiArray &msg)
+{
+    path_try_flag = msg.data[3];
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "joystick_tr_node");
@@ -129,6 +139,7 @@ int main(int argc, char **argv)
 
     ros::Subscriber joy_sub = n.subscribe("joy", 100, msgCallback);
     ros::Subscriber arm_sub = n.subscribe("arm_mbed_reply", 100, armCallback);
+    ros::Subscriber path_sub = n.subscribe("path_control", 100, pathCallback);
 
     ros::NodeHandle arg_n("~");
     int looprate = 60; // Hz

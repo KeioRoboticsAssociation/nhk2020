@@ -107,19 +107,28 @@ int main(int argc, char **argv)
         if (path_mode != 0)
         {
             control = path[path_mode - 1].pure_pursuit(pos[0], pos[1], forwardflag);
-            if (forwardflag)
-            {
+			float tryflag = 0;
+			if (forwardflag)
+			{
                 if (control[4][1] >= path[path_mode - 1].pnum - 0.03)
                     path_mode = 0;
-            }else{
-                if (control[4][1] <= 1.03)
+				if (2 <= path_mode && path_mode <= 6)	// tryflag
+				{
+					if (control[4][1] >= path[path_mode - 1].pnum - 1.0)
+						tryflag = 2.0f;
+				}
+			}
+			else
+			{
+				if (control[4][1] <= 1.03)
                     path_mode = 0;
             }
 			std_msgs::Float32MultiArray floatarray;
-			floatarray.data.resize(3);
+			floatarray.data.resize(4);
 			floatarray.data[0] = control[1][1];
 			floatarray.data[1] = control[2][1];
 			floatarray.data[2] = control[3][1];
+			floatarray.data[3] = tryflag;
 			path_pub.publish(floatarray);
 		}
 
@@ -148,10 +157,11 @@ int main(int argc, char **argv)
 		case 7:	// no_path
 			path_mode = 0;
 			std_msgs::Float32MultiArray farray;
-			farray.data.resize(3);
+			farray.data.resize(4);
 			farray.data[0] = 0;
 			farray.data[1] = 0;
 			farray.data[2] = control[3][1];
+			farray.data[3] = 0;
 			path_pub.publish(farray);
 			break;
 		}
@@ -184,8 +194,8 @@ void change_RB(std::string zone) {
 }
 
 void set_mode(int next) {
-	//if (path_mode != 0)
-	//	return;
+	if (path_mode != 0)
+		return;
 	bool forward = true;
 	switch (mode) {
 	case 0:	// start

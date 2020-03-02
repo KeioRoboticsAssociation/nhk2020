@@ -1,26 +1,14 @@
-#include <mbed.h>
-#include "BOARDC_BNO055.h"
-#include "mbedserial.h"
+// main.cpp
 
-/*********************** Param *************************/
-#define PI 3.141592f
-#define TRY_MOTOR_PERIOD 50 // (ms)
-#define TRY_MOTOR_DUTY 0.3f
-#define KICK_WAIT_TIME_MS 40 // (ms)
-#define RECOVER_TIMEOUT 50  // (ms)
-
-float bno_euler_scale = 1;
-float bno_offset = 0.0f; // (rad)
-float bno_old = 0.0f;    // (rad)
-float bno_angle = 0.0f;  // old - offset (rad)
-
-/*******************************************************/
+#include "common.h"
 
 Serial pc(USBTX, USBRX, 115200);
 BOARDC_BNO055 bno(PB_7, PB_8); // SDA,SCL
 Mbedserial Ms(pc);
-PwmOut pwm_try(PA_8);
-DigitalOut phase_try(PC_11);
+PwmOut pwm_try1(PA_8);
+PwmOut pwm_try2(PA_0);
+RDS5160Servo servo1(pwm_try1, 1500, true);  // PWM:500us-2500us, 270 degree
+RDS5160Servo servo2(pwm_try2, 1500, false);
 DigitalOut kick1(PC_5);
 DigitalOut kick1_2(PB_14);
 DigitalOut kick2(PB_12);
@@ -31,13 +19,7 @@ InterruptIn button(USER_BUTTON);
 /******************* Function *************************/
 void Push();
 void Pull();
-void bno_init();
-void set_offset();
-void get_angle();
-void try_motor(int phasedata_, int flagdata_);
-void kickandhold();
 void serial_interrupt();
-void waittime_ms(int t);
 
 int replyflag = 1;         // publish (0:mode-task, 1:finished)
 bool modezeroflag = false; // true: mode-task has already done
@@ -52,8 +34,8 @@ int main()
   button.fall(Push);
   button.rise(Pull);
   bno_init();
-  pwm_try.period_ms(TRY_MOTOR_PERIOD);
   Ms.int_attach(serial_interrupt);
+  try_motor(TRY_MOTOR_ANGLE1, 0);
 
   while (1)
   {
@@ -69,11 +51,15 @@ int main()
       waittime_ms(500);
       switch (Ms.getint[1]) // mode
       {
-      case 1:
-      case 2:
+      case 1: // try
+        try_motor(TRY_MOTOR_ANGLE2, 500);
+        waittime_ms(1000);
+        try_motor(TRY_MOTOR_ANGLE1, 500);
         break;
-      case 3: // kick
+      case 2: // kick
         kickandhold();
+        break;
+      case 3:
         break;
       default:
         break;
@@ -95,75 +81,6 @@ void Pull()
   myled = 0;
 }
 
-void bno_init()
-{
-  bno.initialize();
-  bno_euler_scale = bno.getEulerScale();
-  get_angle();
-  set_offset();
-}
-
-void set_offset()
-{
-  bno_offset = bno_old;
-}
-
-void get_angle()
-{
-  static float angle_raw = 0.0f;
-  static int n_pi = 0;
-  short dataBox[3] = {0};
-  // get data
-  bno.getEulerDataAll(dataBox[2], dataBox[1], dataBox[0]);
-  angle_raw = -(float)dataBox[2] * bno_euler_scale * PI / 180.0f;
-  if (angle_raw + PI * (float)(n_pi - 1) > bno_old)
-    n_pi -= 2;
-  else if (angle_raw + PI * (float)(n_pi + 1) < bno_old)
-    n_pi += 2;
-  float bno_old_temp = angle_raw + PI * (float)n_pi;
-  if(abs(bno_old_temp-bno_old) < PI/9 || bno_old_temp == 0.0f)
-    bno_old = bno_old_temp;
-  bno_angle = bno_old - bno_offset;
-}
-
-void try_motor(int phasedata_, int flagdata_)
-{
-  float duty_ = 0;
-  if (flagdata_ == 1 || phasedata_ == 0) // stop or try_motor=0
-  {
-    phase_try = 0;
-    pwm_try.pulsewidth_ms(0);
-  }
-  else if (phasedata_ == 1)
-  {
-    phase_try = 1;
-    pwm_try.pulsewidth_ms(TRY_MOTOR_DUTY * (float)TRY_MOTOR_PERIOD);
-  }
-  else if (phasedata_ == -1)
-  {
-    phase_try = 0;
-    pwm_try.pulsewidth_ms(TRY_MOTOR_DUTY * (float)TRY_MOTOR_PERIOD);
-  }
-}
-
-void kickandhold()
-{
-  // kick
-  kick1 = 1;
-  waittime_ms(KICK_WAIT_TIME_MS); // delay
-  kick2 = 1;
-  waittime_ms(3000); // wait
-  // return
-  kick1 = 0;
-  kick2 = 0;
-  kick1_2 = 1;
-  kick2_2 = 1;
-  waittime_ms(5000); // wait
-  // switch off
-  kick1_2 = 0;
-  kick2_2 = 0;
-}
-
 void serial_interrupt()
 {
   // send replyflag and bno_angle
@@ -182,7 +99,6 @@ void waittime_ms(int t)
   int t_count = 0;
   while (t_count < t)
   {
-    try_motor(Ms.getint[2], Ms.getint[0]);  // try_motor
     if (Ms.getint[0] != 1) //stop
     {
       t_count += 20;
