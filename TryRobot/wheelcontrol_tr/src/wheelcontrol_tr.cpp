@@ -45,7 +45,7 @@ void pathCallback(const std_msgs::Float32MultiArray &msg)
 {
     path_vx = msg.data[0];
     path_vy = msg.data[1];
-    path_omega = msg.data[2] - bno_theta;
+    path_omega = msg.data[2];
     //path_omega *= path_omega;
 }
 
@@ -121,16 +121,10 @@ int main(int argc, char **argv)
 
 void calc_accel(float &now, float &old, float delta)
 {
-    if (now > old)
-    {
-        if (now > old + delta)
-            now = old + delta;
-    }
-    else
-    {
-        if (now < old - delta)
-            now = old - delta;
-    }
+    if (now > old + delta)
+        now = old + delta;
+    else if (now < old - delta)
+        now = old - delta;
     //if (abs(now) < 0.01)
     //    now = 0;
     old = now;

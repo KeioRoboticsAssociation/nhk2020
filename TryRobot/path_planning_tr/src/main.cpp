@@ -47,6 +47,7 @@ int getmode = 0;	// 0:else, 1:start, 2:back, 3:try_point, 4~6:kick1~3, 7:break
 int trymode = 0;	// 0:else 1~5:try1~5
 bool forwardflag = true;
 float pos[3] = {0};	// [x,y,theta]
+float bno_theta = 0;
 
 void change_RB(std::string zone);
 void set_mode(int next);
@@ -65,6 +66,11 @@ void buttonCallback(const std_msgs::Int32MultiArray &msg)
 	getmode = msg.data[3];
 }
 
+void bnoCallback(const std_msgs::Float32MultiArray &msg)
+{
+    bno_theta = msg.data[0];
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "path_planning_node");
@@ -74,6 +80,7 @@ int main(int argc, char **argv)
     
 	ros::Subscriber pathmode_sub = n.subscribe("arm_mbed", 100, buttonCallback);
 	ros::Subscriber odom_sub = n.subscribe("odom", 100, odomCallback);
+	ros::Subscriber bno_sub = n.subscribe("bno_float", 100, bnoCallback);
 
     ros::NodeHandle arg_n("~");
     int looprate = 30;      // Hz
@@ -81,8 +88,9 @@ int main(int argc, char **argv)
 	arg_n.getParam("frequency", looprate);
 	arg_n.getParam("zone", zonename);
 
-	change_RB(zonename);
 	Matrix control(4, 1);
+
+	change_RB(zonename);
 
 	// tf listener
 	//////tf::TransformListener listener;
@@ -108,15 +116,16 @@ int main(int argc, char **argv)
 		if(armmode == 2){
 			mode = 0;
 			path_mode = 0;
-			getmode = 7;
+			getmode = 0;
 			//try_mode = 1;
 		}
+
+		float tryflag = 0;
 
 		// pure_pursuit
         if (path_mode != 0)
         {
             control = path[path_mode - 1].pure_pursuit(pos[0], pos[1], forwardflag);
-			float tryflag = 0;
 			if (forwardflag)
 			{
                 if (control[4][1] >= path[path_mode - 1].pnum - 0.2)
@@ -132,14 +141,22 @@ int main(int argc, char **argv)
 				if (control[4][1] <= 1.2)
                     path_mode = 0;
             }
-			std_msgs::Float32MultiArray floatarray;
-			floatarray.data.resize(4);
-			floatarray.data[0] = control[1][1];
-			floatarray.data[1] = control[2][1];
-			floatarray.data[2] = control[3][1];
-			floatarray.data[3] = tryflag;
-			path_pub.publish(floatarray);
+			control[3][1] -= bno_theta;
+		}else{
+			control[1][1] = 0;
+			control[2][1] = 0;
+			control[3][1] = 0;
+			tryflag = 0;
 		}
+
+		// publish
+		std_msgs::Float32MultiArray floatarray;
+		floatarray.data.resize(4);
+		floatarray.data[0] = control[1][1];
+		floatarray.data[1] = control[2][1];
+		floatarray.data[2] = control[3][1];
+		floatarray.data[3] = tryflag;
+		path_pub.publish(floatarray);
 
 		// change path
 		switch(getmode){
@@ -165,13 +182,6 @@ int main(int argc, char **argv)
 			break;
 		case 7:	// no_path
 			path_mode = 0;
-			std_msgs::Float32MultiArray farray;
-			farray.data.resize(4);
-			farray.data[0] = 0;
-			farray.data[1] = 0;
-			farray.data[2] = control[3][1];
-			farray.data[3] = 0;
-			path_pub.publish(farray);
 			break;
 		}
 
