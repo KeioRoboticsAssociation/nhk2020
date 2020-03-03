@@ -21,8 +21,8 @@
 /******************** class ************************/
 class Path {
 private:
-	float max_accel = 0.1, max_vel = 0.5;	// m/(s^2), m/s
-	float max_initial_speed = 0.05;	// [m/s]
+	float max_accel = 1.0, max_vel = 1.0;	// m/(s^2), m/s
+	float max_initial_speed = 0.1;	// [m/s]
 	float position[2] = { 0,0 };	// [x,y]
 	float ref_t = 1;
 	Matrix control_point;	// [ctrl_point][x,y]

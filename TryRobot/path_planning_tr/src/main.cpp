@@ -44,7 +44,7 @@ int armmode = 0;	// 2:reset
 int mode = 0;		// 0:start, 1:receive, 2~6:try1~5, 7~9:kick1~3
 int path_mode = 0;	// 0:none, 1:path1, 2:path2, ...LINE_NUM
 int getmode = 0;	// 0:else, 1:start, 2:back, 3:try_point, 4~6:kick1~3, 7:break
-int trymode = 0;	// 0:else 1~5:try1~5
+int trymode = 1;	// 0:else 1~5:try1~5
 bool forwardflag = true;
 float pos[3] = {0};	// [x,y,theta]
 float bno_theta = 0;
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
             control = path[path_mode - 1].pure_pursuit(pos[0], pos[1], forwardflag);
 			if (forwardflag)
 			{
-                if (control[4][1] >= path[path_mode - 1].pnum - 0.2)
+                if (control[4][1] >= path[path_mode - 1].pnum - 0.5)
                     path_mode = 0;
 				if (2 <= path_mode && path_mode <= 6)	// tryflag
 				{
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				if (control[4][1] <= 1.2)
+				if (control[4][1] <= 1.5)
                     path_mode = 0;
             }
 			control[3][1] -= bno_theta;
@@ -162,13 +162,13 @@ int main(int argc, char **argv)
 		switch(getmode){
 		case 1:	// start
 			if (mode == 1)
-				set_mode(trymode);
+				set_mode(trymode + 1);
 			else
 				set_mode(1);
 			break;
 		case 2:	// back
 			if (mode == 0)
-				set_mode(trymode);
+				set_mode(trymode + 1);
 			else
 				set_mode(0);
 			break;

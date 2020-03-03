@@ -22,8 +22,8 @@ diff_t[1] = -1 * (transform_gear_into_encoder(target_angle, 1) - en_count_t); //
 #include "motor.h"
 #include "mbedserial.h"
 
-#define MAXDUTY_W 0.85F
-#define MAXDUTY_T 0.6F
+#define MAXDUTY_W 0.8F
+#define MAXDUTY_T 0.5F
 
 Serial pc(USBTX, USBRX, 115200);
 Ticker ticker;
@@ -37,7 +37,7 @@ DigitalOut LED(LED3);
 DigitalOut OE(PF_1, 0); // レベルシフタを有効化
 
 //----------------------------------------Motor---------------------------------------------------
-#define STYLE_LF //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
+#define STYLE_RB //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
 
 #ifdef STYLE_RF
 //MotorA
@@ -153,9 +153,9 @@ float diff_w[2] = {};           //差分を管理
 int Delta_T = SUMPLING_TIME_US; //周期
 
 //変える
-#define I_SET_t 50
-#define I_SET_w 50
-#define D_SET_t 50
+#define I_SET_t 10000
+#define I_SET_w 10000
+#define D_SET_t 10000
 #define D_SET_w 3600
 //--------------------------------------------------------------------------------------------------
 
@@ -223,8 +223,8 @@ void init_PID()
   target_angle = 0; //目標角
   target_speed = 0; //目標角速度.1秒間に進む角
 
-  set_PID_t(15.0F, 15.0F, 1.5F); //比例定数の設定
-  set_PID_w(0.2F, 0.2F, 0.005F); //比例定数の設定
+  set_PID_t(40.0F, 30.0F, 0.1F); //比例定数の設定
+  set_PID_w(0.5F, 0.5F, 0.010F); //比例定数の設定
 }
 
 int main(void)

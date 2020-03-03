@@ -27,7 +27,7 @@ void joyCallback(const std_msgs::Float32MultiArray &msg)
 {
     joy_vx = msg.data[0] * 1.0f;
     joy_vy = msg.data[1] * 1.0f;
-    joy_omega = msg.data[2] * 0.7f;
+    joy_omega = msg.data[2] * 1.5f;
 }
 
 void bnoCallback(const std_msgs::Float32MultiArray &msg)
@@ -45,7 +45,7 @@ void pathCallback(const std_msgs::Float32MultiArray &msg)
 {
     path_vx = msg.data[0];
     path_vy = msg.data[1];
-    path_omega = msg.data[2];
+    path_omega = msg.data[2];/////////////////
     //path_omega *= path_omega;
 }
 
