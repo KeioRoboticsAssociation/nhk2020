@@ -1,0 +1,9 @@
+<launch>
+
+    <node pkg="joystick_pr" name="joystick_pr" type="joystick_pr_node" output="screen">
+    <param name = "loop" value = "30"/>
+    </node>
+
+    <node pkg="joy" name="joy" type="joy_node" />
+
+</launch>
