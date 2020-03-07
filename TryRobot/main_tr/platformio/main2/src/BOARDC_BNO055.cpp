@@ -567,12 +567,19 @@ char BNO055_I2C_CTRL::wrc(bool isPage1, char startRegAddr, char *Bytes, char len
  * <I2C>
  * バス開放
  */
+
+void BNO055_I2C_CTRL::resetpin(PinName rstpin){
+    reset_pin = rstpin;
+    rstout = new DigitalOut(rstpin);
+    //*rstout = 1;
+}
+
 void BNO055_I2C_CTRL::recover(){
-    if(din1->read() == 0){
+    //if(din1->read() == 0){
         delete iface;
         iface = new I2C(sda_tx_pin, scl_rx_pin);
         iface->frequency(i2c_freq);
-    }
+    //}
 }
 
 void BNO055_I2C_CTRL::recover(int timeout_ms){
@@ -585,6 +592,14 @@ void BNO055_I2C_CTRL::recover(int timeout_ms){
         timer.start();
     }
 }
+
+void BNO055_I2C_CTRL::hardrecover(int timeout_ms, float &data){
+    if(timer.read_ms()>timeout_ms){
+        recover();
+        timer2.reset();
+        timer2.start();
+    }
+};
  
 /* ==================================================================
  * <I2C>
@@ -3936,10 +3951,22 @@ char BOARDC_BNO055::setAccAnyMotionSetting(char setting){
 /* ==================================================================
  * I2Cバス開放
  */
+void BOARDC_BNO055::resetpin(PinName rstpin){
+    ctrl->resetpin(rstpin);
+}
+
 void BOARDC_BNO055::recover(){
     ctrl->recover();
 }
 
 void BOARDC_BNO055::recover(int timeout_ms){
     ctrl->recover(timeout_ms);
+}
+
+void BOARDC_BNO055::hardrecover(int timeout_ms, float &data){
+    ctrl->hardrecover(timeout_ms, data);
+};
+
+void BOARDC_BNO055::hardrecover_check(){
+    ctrl->hardrecover_check();
 }

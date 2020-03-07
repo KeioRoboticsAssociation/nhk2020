@@ -128,7 +128,7 @@ int main(int argc, char **argv)
             control = path[path_mode - 1].pure_pursuit(pos[0], pos[1], forwardflag);
 			if (forwardflag)
 			{
-                if (control[4][1] >= path[path_mode - 1].pnum - 0.5)
+                if (control[4][1] >= path[path_mode - 1].pnum - 0.4)
                     path_mode = 0;
 				if (2 <= path_mode && path_mode <= 6)	// tryflag
 				{
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				if (control[4][1] <= 1.5)
+				if (control[4][1] <= 1.4)
                     path_mode = 0;
             }
 			control[3][1] -= bno_theta;

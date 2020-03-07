@@ -137,9 +137,12 @@ protected:
 public:
     PinName sda_tx_pin;
     PinName scl_rx_pin;
+    PinName reset_pin;
     DigitalIn *din1;
     DigitalIn *din2;
+    DigitalOut *rstout;
     Timer timer;
+    Timer timer2;
     char getNowPage();
     char getLastError();
     char getLastLength();
@@ -148,8 +151,13 @@ public:
     virtual char rrc(bool isPage1, char startRegAddr, unsigned char *receiveBytes, char length);
     virtual char wr(bool isPage1, char regAddr, char wBytes);
     virtual char wrc(bool isPage1, char startRegAddr, char *Bytes, char length);
+    virtual void resetpin(PinName rstpin){};
     virtual void recover(){};
     virtual void recover(int timeout_ms){};
+    virtual void hardrecover(int timeout_ms, float &data){};
+    virtual void hardrecover_check() { timer2.reset();
+        timer2.start();
+    };
 };
  
 class BNO055_UART_CTRL : public BNO055_CTRL{
@@ -185,8 +193,10 @@ public:
     virtual char rrc(bool isPage1, char startRegAddr, unsigned char *receiveBytes, char length);
     virtual char wr(bool isPage1, char regAddr, char wBytes);
     virtual char wrc(bool isPage1, char startRegAddr, char *Bytes, char length);
+    virtual void resetpin(PinName rstpin);
     virtual void recover();
     virtual void recover(int timeout_ms);
+    virtual void hardrecover(int timeout_ms, float &data);
 };
  
 class BOARDC_BNO055{
@@ -467,8 +477,11 @@ public:
     char getAccAnyMotionSetting();
     char setAccAnyMotionSetting(char setting);
 
+    void resetpin(PinName rstpin);
     void recover();
     void recover(int timeout_ms);
+    void hardrecover(int timeout_ms, float &data);
+    void hardrecover_check();
 };
  
 #endif

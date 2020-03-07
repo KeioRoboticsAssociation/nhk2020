@@ -36,6 +36,7 @@ int main()
   bno_init();
   Ms.int_attach(serial_interrupt);
   try_motor(TRY_MOTOR_ANGLE1, 0);
+  //bno.resetpin(PC_8);
 
   while (1)
   {
@@ -74,7 +75,7 @@ int main()
 
 void Push()
 {
-  set_offset();
+  bno.recover();
   myled = 1;
 }
 
@@ -93,7 +94,7 @@ void serial_interrupt()
     Ms.int_write(&replyflag, 1);
   writeflag = !writeflag;
   bno.recover(RECOVER_TIMEOUT);
-  //bno.recover();
+  //bno.hardrecover(RECOVER_TIMEOUT, bno_angle);
 }
 
 void waittime_ms(int t)
@@ -108,6 +109,7 @@ void waittime_ms(int t)
         set_offset();
     }
     get_angle();
+    //bno.hardrecover_check();
     wait_us(20000);
   }
 }
