@@ -93,8 +93,8 @@ void serial_interrupt()
   else
     Ms.int_write(&replyflag, 1);
   writeflag = !writeflag;
-  bno.recover(RECOVER_TIMEOUT);
-  //bno.hardrecover(RECOVER_TIMEOUT, bno_angle);
+  //bno.recover(RECOVER_TIMEOUT);
+  bno.hardrecover(RECOVER_TIMEOUT);
 }
 
 void waittime_ms(int t)
@@ -109,7 +109,7 @@ void waittime_ms(int t)
         set_offset();
     }
     get_angle();
-    //bno.hardrecover_check();
+    bno.hardrecover_check();
     wait_us(20000);
   }
 }

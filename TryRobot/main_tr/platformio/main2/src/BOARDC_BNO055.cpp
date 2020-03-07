@@ -586,15 +586,18 @@ void BNO055_I2C_CTRL::recover(int timeout_ms){
     if(din1->read() == 1){
         timer.reset();
         timer.start();
-    }else if(timer.read_ms() > timeout_ms){
+    }
+    else if (timer.read_ms() > timeout_ms)
+    {
         recover();
         timer.reset();
         timer.start();
     }
 }
 
-void BNO055_I2C_CTRL::hardrecover(int timeout_ms, float &data){
-    if(timer.read_ms()>timeout_ms){
+void BNO055_I2C_CTRL::hardrecover(int timeout_ms){
+    if (timer2.read_ms() > timeout_ms)
+    {
         recover();
         timer2.reset();
         timer2.start();
@@ -3963,8 +3966,8 @@ void BOARDC_BNO055::recover(int timeout_ms){
     ctrl->recover(timeout_ms);
 }
 
-void BOARDC_BNO055::hardrecover(int timeout_ms, float &data){
-    ctrl->hardrecover(timeout_ms, data);
+void BOARDC_BNO055::hardrecover(int timeout_ms){
+    ctrl->hardrecover(timeout_ms);
 };
 
 void BOARDC_BNO055::hardrecover_check(){

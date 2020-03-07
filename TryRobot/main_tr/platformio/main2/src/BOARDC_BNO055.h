@@ -154,8 +154,9 @@ public:
     virtual void resetpin(PinName rstpin){};
     virtual void recover(){};
     virtual void recover(int timeout_ms){};
-    virtual void hardrecover(int timeout_ms, float &data){};
-    virtual void hardrecover_check() { timer2.reset();
+    virtual void hardrecover(int timeout_ms){};
+    virtual void hardrecover_check() {
+        timer2.reset();
         timer2.start();
     };
 };
@@ -196,7 +197,7 @@ public:
     virtual void resetpin(PinName rstpin);
     virtual void recover();
     virtual void recover(int timeout_ms);
-    virtual void hardrecover(int timeout_ms, float &data);
+    virtual void hardrecover(int timeout_ms);
 };
  
 class BOARDC_BNO055{
@@ -480,7 +481,7 @@ public:
     void resetpin(PinName rstpin);
     void recover();
     void recover(int timeout_ms);
-    void hardrecover(int timeout_ms, float &data);
+    void hardrecover(int timeout_ms);
     void hardrecover_check();
 };
  

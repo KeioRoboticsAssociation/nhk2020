@@ -13,7 +13,7 @@
 #define TRY_MOTOR_PERIOD 50 // (ms)
 #define TRY_MOTOR_DUTY 0.3f
 #define KICK_WAIT_TIME_MS 40 // (ms)
-#define RECOVER_TIMEOUT 600  // (ms)
+#define RECOVER_TIMEOUT 100  // (ms)
 #define TRY_MOTOR_ANGLE1 -80    // (degree)
 #define TRY_MOTOR_ANGLE2 60
 
