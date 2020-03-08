@@ -53,7 +53,8 @@ void Path::set_point_csv(std::string filename) {
 		getline(ss, sy, ',');
 		point[count][2] = atof(sy.c_str());
 		getline(ss, stheta, ',');
-		if (stheta == "-") {
+		if (stheta == "-")
+		{
 			theta_count++;
 		}
 		else {

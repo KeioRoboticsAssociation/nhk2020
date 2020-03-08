@@ -130,9 +130,14 @@ int main(int argc, char **argv)
 			{
                 if (control[4][1] >= path[path_mode - 1].pnum - 0.4)
                     path_mode = 0;
-				if (2 <= path_mode && path_mode <= 6)	// tryflag
+				if (2 <= path_mode && path_mode <= 6)	// tryflag : receive->try
 				{
-					if (control[4][1] >= path[path_mode - 1].pnum - 1.0)
+					if (control[4][1] >= path[path_mode - 1].pnum - 0.9)
+						tryflag = 2.0f;
+				}
+				else if (16 <= path_mode && path_mode <= 20)	// tryflag : start->try
+				{
+					if (control[4][1] >= path[path_mode - 1].pnum - 0.9)
 						tryflag = 2.0f;
 				}
 			}

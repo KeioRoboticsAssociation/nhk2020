@@ -46,7 +46,7 @@ void pathCallback(const std_msgs::Float32MultiArray &msg)
     path_vx = msg.data[0];
     path_vy = msg.data[1];
     path_omega = msg.data[2];/////////////////
-    //path_omega *= path_omega;
+    path_omega /= 10.0f;
 }
 
 int main(int argc, char **argv)
@@ -71,15 +71,15 @@ int main(int argc, char **argv)
     arg_n.getParam("accel_xy", accel[0]);
     arg_n.getParam("accel_theta", accel[1]);
 
-    accel[0] /= (float)looprate;
-    accel[1] /= (float)looprate;
+    accel[0] /= (float)(looprate * looprate);
+    accel[1] /= (float)(looprate * looprate);
 
     ros::Rate loop_rate(looprate);
     while (ros::ok())
     {
         loop_vx = (joy_vx + path_vx) / (float)looprate;
         loop_vy = (joy_vy + path_vy) / (float)looprate;
-        loop_omega = (joy_omega + path_omega) / (float)looprate;
+        loop_omega = path_omega + joy_omega / (float)looprate;
         if (flag == 1) //stop
         {
             loop_vx = 0;

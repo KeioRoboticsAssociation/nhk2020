@@ -23,7 +23,7 @@ diff_t[1] = -1 * (transform_gear_into_encoder(target_angle, 1) - en_count_t); //
 #include "mbedserial.h"
 
 #define MAXDUTY_W 0.8F
-#define MAXDUTY_T 0.5F
+#define MAXDUTY_T 0.4F
 
 Serial pc(USBTX, USBRX, 115200);
 Ticker ticker;
@@ -37,7 +37,7 @@ DigitalOut LED(LED3);
 DigitalOut OE(PF_1, 0); // レベルシフタを有効化
 
 //----------------------------------------Motor---------------------------------------------------
-#define STYLE_RB //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
+#define STYLE_RF //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
 
 #ifdef STYLE_RF
 //MotorA
@@ -223,7 +223,7 @@ void init_PID()
   target_angle = 0; //目標角
   target_speed = 0; //目標角速度.1秒間に進む角
 
-  set_PID_t(40.0F, 30.0F, 0.1F); //比例定数の設定
+  set_PID_t(40.0F, 30.0F*0, 0.1F); //比例定数の設定
   set_PID_w(0.5F, 0.5F, 0.010F); //比例定数の設定
 }
 
@@ -386,9 +386,15 @@ void PID_t(void)
   v_t = transform_encoder_into_gear(delta_v, 1); //エンコーダーの差分から回転テーブルの差分に変換する
   table_speed = v_t / MAX_TABLE_SPEED;           //-1~1のfloat値に変換(abs0.9以上 or abs0.02未満の場合はBrakeになるが)
   if (table_speed >= MAXDUTY_T)
+  {
     table_speed = MAXDUTY_T;
+    I = 0;/////
+  }
   else if (table_speed <= -MAXDUTY_T)
+  {
     table_speed = -MAXDUTY_T;
+    I = 0;/////
+  }
   Table.setSpeed(table_speed);
 }
 

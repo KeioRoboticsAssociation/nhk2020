@@ -5,8 +5,8 @@
 Serial pc(USBTX, USBRX, 115200);
 BOARDC_BNO055 bno(PB_7, PB_8); // SDA,SCL
 Mbedserial Ms(pc);
-PwmOut pwm_try1(PA_8);
-PwmOut pwm_try2(PA_0);
+PwmOut pwm_try1(PA_0);
+PwmOut pwm_try2(PA_8);
 RDS5160Servo servo1(pwm_try1, 1500, true);  // PWM:500us-2500us, 270 degree
 RDS5160Servo servo2(pwm_try2, 1500, false);
 DigitalOut kick1(PC_5);
@@ -54,9 +54,9 @@ int main()
       switch (Ms.getint[1]) // mode
       {
       case 1: // try
-        try_motor(TRY_MOTOR_ANGLE2, 500);
-        waittime_ms(1000);
-        try_motor(TRY_MOTOR_ANGLE1, 500);
+        try_motor(TRY_MOTOR_ANGLE2, 300);
+        waittime_ms(50);
+        try_motor(TRY_MOTOR_ANGLE1, 300);
         break;
       case 2: // kick
         kickandhold();
