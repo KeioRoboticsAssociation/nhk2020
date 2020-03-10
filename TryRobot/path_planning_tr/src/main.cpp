@@ -128,22 +128,22 @@ int main(int argc, char **argv)
             control = path[path_mode - 1].pure_pursuit(pos[0], pos[1], forwardflag);
 			if (forwardflag)
 			{
-                if (control[4][1] >= path[path_mode - 1].pnum - 0.4)
+                if (control[4][1] >= path[path_mode - 1].pnum - 0.35)
                     path_mode = 0;
 				if (2 <= path_mode && path_mode <= 6)	// tryflag : receive->try
 				{
-					if (control[4][1] >= path[path_mode - 1].pnum - 0.9)
+					if (control[4][1] >= path[path_mode - 1].pnum - 0.8)
 						tryflag = 2.0f;
 				}
 				else if (16 <= path_mode && path_mode <= 20)	// tryflag : start->try
 				{
-					if (control[4][1] >= path[path_mode - 1].pnum - 0.9)
+					if (control[4][1] >= path[path_mode - 1].pnum - 0.8)
 						tryflag = 2.0f;
 				}
 			}
 			else
 			{
-				if (control[4][1] <= 1.4)
+				if (control[4][1] <= 1.35)
                     path_mode = 0;
             }
 			control[3][1] -= bno_theta;

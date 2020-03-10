@@ -63,13 +63,13 @@ void kickandhold()
   kick1 = 1;
   waittime_ms(KICK_WAIT_TIME_MS); // delay
   kick2 = 1;
-  waittime_ms(3000); // wait
+  waittime_ms(2000); // wait
   // return
   kick1 = 0;
   kick2 = 0;
   kick1_2 = 1;
   kick2_2 = 1;
-  waittime_ms(5000); // wait
+  waittime_ms(2000); // wait
   // switch off
   kick1_2 = 0;
   kick2_2 = 0;

@@ -68,8 +68,6 @@ void msgCallback(const sensor_msgs::Joy &msg)
         else if(path_try_flag > 1) // try_flag
             mode = 1;
     }
-    else
-        path_try_flag = 0;
 
     // pathmode
     static bool kickflag = false;
