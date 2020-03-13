@@ -65,15 +65,24 @@ void msgCallback(const sensor_msgs::Joy &msg)
             mode = 2;
         else if (msg.buttons[MODE_3] == 1)
             mode = 3;
-        else if(path_try_flag > 1) // try_flag
+        else if (path_try_flag > 1) // try_flag
             mode = 1;
     }
 
     // pathmode
     static bool kickflag = false;
+    static bool kickflagbutton = true; // T:ready to push, F:already pushed
     if (msg.buttons[CHANGE] == 1)
-        kickflag = !kickflag;
-    else if (msg.buttons[START_K1] == 1)
+    {
+        if (kickflagbutton)
+        {
+            kickflag = !kickflag;
+            kickflagbutton = false;
+        }
+    }
+    else
+        kickflagbutton = true;
+    if (msg.buttons[START_K1] == 1)
     {
         if (kickflag)
             pathmode = 4;

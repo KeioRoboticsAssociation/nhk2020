@@ -40,13 +40,13 @@ F2: create csv Blue -> Red
 26: kick1 -> kick3
 */
 
-int armmode = 0;	// 2:reset
-int mode = 0;		// 0:start, 1:receive, 2~6:try1~5, 7~9:kick1~3
-int path_mode = 0;	// 0:none, 1:path1, 2:path2, ...LINE_NUM
-int getmode = 0;	// 0:else, 1:start, 2:back, 3:try_point, 4~6:kick1~3, 7:break
-int trymode = 1;	// 0:else 1~5:try1~5
+int armmode = 0;   // 2:reset
+int mode = 0;	  // 0:start, 1:receive, 2~6:try1~5, 7~9:kick1~3
+int path_mode = 0; // 0:none, 1:path1, 2:path2, ...LINE_NUM
+int getmode = 0;   // 0:else, 1:start, 2:back, 3:try_point, 4~6:kick1~3, 7:break
+int trymode = 1;   // 0:else 1~5:try1~5
 bool forwardflag = true;
-float pos[3] = {0};	// [x,y,theta]
+float pos[3] = {0}; // [x,y,theta]
 float bno_theta = 0;
 
 void change_RB(std::string zone);
@@ -55,8 +55,8 @@ void csv_converter(std::string infilename);
 
 void odomCallback(const nav_msgs::Odometry &msg)
 {
-    pos[0] = msg.pose.pose.position.x;
-    pos[1] = msg.pose.pose.position.y;
+	pos[0] = msg.pose.pose.position.x;
+	pos[1] = msg.pose.pose.position.y;
 	//ROS_INFO("[%.1f, %.1f]", pos[0],pos[1]);////////////
 }
 
@@ -68,22 +68,22 @@ void buttonCallback(const std_msgs::Int32MultiArray &msg)
 
 void bnoCallback(const std_msgs::Float32MultiArray &msg)
 {
-    bno_theta = msg.data[0];
+	bno_theta = msg.data[0];
 }
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "path_planning_node");
+	ros::init(argc, argv, "path_planning_node");
 
-    ros::NodeHandle n;
-    ros::Publisher path_pub = n.advertise<std_msgs::Float32MultiArray>("path_control", 10);
-    
+	ros::NodeHandle n;
+	ros::Publisher path_pub = n.advertise<std_msgs::Float32MultiArray>("path_control", 10);
+
 	ros::Subscriber pathmode_sub = n.subscribe("arm_mbed", 100, buttonCallback);
 	ros::Subscriber odom_sub = n.subscribe("odom", 100, odomCallback);
 	ros::Subscriber bno_sub = n.subscribe("bno_float", 100, bnoCallback);
 
-    ros::NodeHandle arg_n("~");
-    int looprate = 30;      // Hz
+	ros::NodeHandle arg_n("~");
+	int looprate = 30; // Hz
 	std::string zonename;
 	arg_n.getParam("frequency", looprate);
 	arg_n.getParam("zone", zonename);
@@ -95,9 +95,9 @@ int main(int argc, char **argv)
 	// tf listener
 	//////tf::TransformListener listener;
 
-    ros::Rate loop_rate(looprate);
-    while (ros::ok())
-    {
+	ros::Rate loop_rate(looprate);
+	while (ros::ok())
+	{
 		// tf_listner
 		/*
 		tf::StampedTransform transform;
@@ -113,7 +113,8 @@ int main(int argc, char **argv)
 		*/
 
 		// reset
-		if(armmode == 2){
+		if (armmode == 2)
+		{
 			mode = 0;
 			path_mode = 0;
 			getmode = 0;
@@ -123,31 +124,33 @@ int main(int argc, char **argv)
 		float tryflag = 0;
 
 		// pure_pursuit
-        if (path_mode != 0)
-        {
-            control = path[path_mode - 1].pure_pursuit(pos[0], pos[1], forwardflag);
+		if (path_mode != 0)
+		{
+			control = path[path_mode - 1].pure_pursuit(pos[0], pos[1], forwardflag);
 			if (forwardflag)
 			{
-                if (control[4][1] >= path[path_mode - 1].pnum - 0.35)
-                    path_mode = 0;
-				if (2 <= path_mode && path_mode <= 6)	// tryflag : receive->try
+				if (control[4][1] >= path[path_mode - 1].pnum - 0.35)
+					path_mode = 0;
+				if (2 <= path_mode && path_mode <= 6) // tryflag : receive->try
 				{
-					if (control[4][1] >= path[path_mode - 1].pnum - 0.8)
+					if (control[4][1] >= path[path_mode - 1].pnum - 1.8)
 						tryflag = 2.0f;
 				}
-				else if (16 <= path_mode && path_mode <= 20)	// tryflag : start->try
+				else if (16 <= path_mode && path_mode <= 20) // tryflag : start->try
 				{
-					if (control[4][1] >= path[path_mode - 1].pnum - 0.8)
+					if (control[4][1] >= path[path_mode - 1].pnum - 1.8)
 						tryflag = 2.0f;
 				}
 			}
 			else
 			{
 				if (control[4][1] <= 1.35)
-                    path_mode = 0;
-            }
+					path_mode = 0;
+			}
 			control[3][1] -= bno_theta;
-		}else{
+		}
+		else
+		{
 			control[1][1] = 0;
 			control[2][1] = 0;
 			control[3][1] = 0;
@@ -164,38 +167,49 @@ int main(int argc, char **argv)
 		path_pub.publish(floatarray);
 
 		// change path
-		switch(getmode){
-		case 1:	// start
+		static bool trymodebutton = true; // T:ready to push, F:already pushed
+		switch (getmode)
+		{
+		case 1: // start
 			if (mode == 1)
 				set_mode(trymode + 1);
 			else
 				set_mode(1);
 			break;
-		case 2:	// back
+		case 2: // back
 			if (mode == 0)
 				set_mode(trymode + 1);
 			else
 				set_mode(0);
 			break;
-		case 3:	// try_point
-			trymode++;
-			if (trymode == 6)
-				trymode = 1;
-			break;
-		case 4:case 5:case 6:	// kick1-3
+		case 3: // try_point
+			if (trymodebutton)
+			{
+				trymode++;
+				if (trymode == 6)
+					trymode = 1;
+				break;
+				trymodebutton = false;
+			}
+		case 4:
+		case 5:
+		case 6: // kick1-3
 			set_mode(getmode + 3);
 			break;
-		case 7:	// no_path
+		case 7: // no_path
 			path_mode = 0;
 			break;
+		default:
+			trymodebutton = true;
 		}
 
 		ros::spinOnce();
 		loop_rate.sleep();
-    }
+	}
 }
 
-void change_RB(std::string zone) {
+void change_RB(std::string zone)
+{
 	using namespace std;
 	for (int i = 0; i < LINE_NUM; i++)
 	{
@@ -209,7 +223,8 @@ void change_RB(std::string zone) {
 		{
 			ss << "data_csv/path_point_red" << i + 1 << ".csv";
 		}
-		else{
+		else
+		{
 			cerr << "err change_RB / filename" << endl;
 			exit(1);
 		}
@@ -217,12 +232,14 @@ void change_RB(std::string zone) {
 	}
 }
 
-void set_mode(int next) {
+void set_mode(int next)
+{
 	if (path_mode != 0)
 		return;
 	bool forward = true;
-	switch (mode) {
-	case 0:	// start
+	switch (mode)
+	{
+	case 0: // start
 		if (next == 1)
 			path_mode = 1;
 		else if (2 <= next && next <= 9)
@@ -230,8 +247,9 @@ void set_mode(int next) {
 		else
 			return;
 		break;
-	case 1:	// receive
-		if (next == 0) {
+	case 1: // receive
+		if (next == 0)
+		{
 			forward = false;
 			path_mode = 1;
 		}
@@ -240,12 +258,14 @@ void set_mode(int next) {
 		else
 			return;
 		break;
-	case 2:	// try1
-		if (next == 0) {
+	case 2: // try1
+		if (next == 0)
+		{
 			forward = false;
 			path_mode = 16;
 		}
-		else if (next == 1) {
+		else if (next == 1)
+		{
 			forward = false;
 			path_mode = 2;
 		}
@@ -258,12 +278,14 @@ void set_mode(int next) {
 		else
 			return;
 		break;
-	case 3:	// try2
-		if (next == 0) {
+	case 3: // try2
+		if (next == 0)
+		{
 			forward = false;
 			path_mode = 17;
 		}
-		else if (next == 1) {
+		else if (next == 1)
+		{
 			forward = false;
 			path_mode = 3;
 		}
@@ -276,12 +298,14 @@ void set_mode(int next) {
 		else
 			return;
 		break;
-	case 4:	// try3
-		if (next == 0) {
+	case 4: // try3
+		if (next == 0)
+		{
 			forward = false;
 			path_mode = 18;
 		}
-		else if (next == 1) {
+		else if (next == 1)
+		{
 			forward = false;
 			path_mode = 4;
 		}
@@ -294,12 +318,14 @@ void set_mode(int next) {
 		else
 			return;
 		break;
-	case 5:	// try4
-		if (next == 0) {
+	case 5: // try4
+		if (next == 0)
+		{
 			forward = false;
 			path_mode = 19;
 		}
-		else if (next == 1) {
+		else if (next == 1)
+		{
 			forward = false;
 			path_mode = 5;
 		}
@@ -312,12 +338,14 @@ void set_mode(int next) {
 		else
 			return;
 		break;
-	case 6:	// try5
-		if (next == 0) {
+	case 6: // try5
+		if (next == 0)
+		{
 			forward = false;
 			path_mode = 20;
 		}
-		else if (next == 1) {
+		else if (next == 1)
+		{
 			forward = false;
 			path_mode = 6;
 		}
@@ -330,8 +358,9 @@ void set_mode(int next) {
 		else
 			return;
 		break;
-	case 7:	// kick1
-		if (next == 0) {
+	case 7: // kick1
+		if (next == 0)
+		{
 			forward = false;
 			path_mode = 21;
 		}
@@ -344,14 +373,16 @@ void set_mode(int next) {
 		else
 			return;
 		break;
-	case 8:	// kick2
-		if (next == 0) {
+	case 8: // kick2
+		if (next == 0)
+		{
 			forward = false;
 			path_mode = 22;
 		}
 		else if (next == 1)
 			path_mode = 14;
-		else if (next == 7) {
+		else if (next == 7)
+		{
 			forward = false;
 			path_mode = 24;
 		}
@@ -360,18 +391,21 @@ void set_mode(int next) {
 		else
 			return;
 		break;
-	case 9:	// kick3
-		if (next == 0) {
+	case 9: // kick3
+		if (next == 0)
+		{
 			forward = false;
 			path_mode = 23;
 		}
 		else if (next == 1)
 			path_mode = 15;
-		else if (next == 7) {
+		else if (next == 7)
+		{
 			forward = false;
 			path_mode = 26;
 		}
-		else if (next == 8) {
+		else if (next == 8)
+		{
 			forward = false;
 			path_mode = 25;
 		}
@@ -380,11 +414,13 @@ void set_mode(int next) {
 		break;
 	}
 	mode = next;
-	if (forward) {
+	if (forward)
+	{
 		forwardflag = true;
 		path[path_mode - 1].pure_pursuit(pos[0], pos[1], forwardflag, 1);
 	}
-	else {
+	else
+	{
 		forwardflag = false;
 		path[path_mode - 1].pure_pursuit(pos[0], pos[1], forwardflag, path[path_mode - 1].pnum);
 	}
