@@ -127,6 +127,7 @@ int main(int argc, char **argv)
 			mode = 0;
 			path_mode = 0;
 			getmode = 0;
+			forwardflag = true;
 			//try_mode = 1;
 		}
 
@@ -142,12 +143,12 @@ int main(int argc, char **argv)
 					path_mode = 0;
 				if (2 <= path_mode && path_mode <= 6) // tryflag : receive->try
 				{
-					if (control[4][1] >= path[path_mode - 1].pnum - 1.8)
+					if (control[4][1] >= path[path_mode - 1].pnum - 2.2)
 						tryflag = 2.0f;
 				}
 				else if (16 <= path_mode && path_mode <= 20) // tryflag : start->try
 				{
-					if (control[4][1] >= path[path_mode - 1].pnum - 1.8)
+					if (control[4][1] >= path[path_mode - 1].pnum - 2.2)
 						tryflag = 2.0f;
 				}
 			}
