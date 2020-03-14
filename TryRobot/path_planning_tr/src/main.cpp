@@ -8,6 +8,8 @@
 
 #define LINE_NUM 26
 
+#define TF_LISTEN
+
 Path path[LINE_NUM];
 /*
 +++++ KEY +++++
@@ -53,22 +55,23 @@ void change_RB(std::string zone);
 void set_mode(int next);
 void csv_converter(std::string infilename);
 
+#ifndef TF_LISTEN
 void odomCallback(const nav_msgs::Odometry &msg)
 {
 	pos[0] = msg.pose.pose.position.x;
 	pos[1] = msg.pose.pose.position.y;
-	//ROS_INFO("[%.1f, %.1f]", pos[0],pos[1]);////////////
+}
+#endif
+
+void bnoCallback(const std_msgs::Float32MultiArray &msg)
+{
+	bno_theta = msg.data[0];
 }
 
 void buttonCallback(const std_msgs::Int32MultiArray &msg)
 {
 	armmode = msg.data[1];
 	getmode = msg.data[3];
-}
-
-void bnoCallback(const std_msgs::Float32MultiArray &msg)
-{
-	bno_theta = msg.data[0];
 }
 
 int main(int argc, char **argv)
@@ -79,8 +82,14 @@ int main(int argc, char **argv)
 	ros::Publisher path_pub = n.advertise<std_msgs::Float32MultiArray>("path_control", 10);
 
 	ros::Subscriber pathmode_sub = n.subscribe("arm_mbed", 100, buttonCallback);
-	ros::Subscriber odom_sub = n.subscribe("odom", 100, odomCallback);
 	ros::Subscriber bno_sub = n.subscribe("bno_float", 100, bnoCallback);
+
+#ifdef TF_LISTEN
+	// tf listener
+	tf::TransformListener listener;
+#else
+	ros::Subscriber odom_sub = n.subscribe("odom", 100, odomCallback);
+#endif
 
 	ros::NodeHandle arg_n("~");
 	int looprate = 30; // Hz
@@ -92,14 +101,12 @@ int main(int argc, char **argv)
 
 	change_RB(zonename);
 
-	// tf listener
-	//////tf::TransformListener listener;
-
 	ros::Rate loop_rate(looprate);
+
 	while (ros::ok())
 	{
+#ifdef TF_LISTEN
 		// tf_listner
-		/*
 		tf::StampedTransform transform;
 		try{
 			listener.lookupTransform("/odom", "/base_link",  ros::Time(0), transform);
@@ -110,7 +117,9 @@ int main(int argc, char **argv)
 		}
 		pos[0] = transform.getOrigin().x();
 		pos[1] = transform.getOrigin().y();
-		*/
+		pos[2] = tf::getYaw(transform.getRotation());
+#endif
+		//ROS_INFO("[%.1f, %.1f]", pos[0],pos[1]);////////////
 
 		// reset
 		if (armmode == 2)
