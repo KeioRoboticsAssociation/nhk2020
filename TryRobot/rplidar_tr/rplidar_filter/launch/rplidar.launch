@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+ <!--RPlidar-->
+  <include file="$(find rplidar_ros)/launch/rplidar_a3.launch" />
+
+  <arg name="laser_filter_file" default="laser_filter1.yaml"/>  
+
+ <!-- laser_filter -->
+  <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+    <rosparam command="load" file="$(find rplidar_filter)/config/$(arg laser_filter_file)" />
+  </node>
+</launch>
