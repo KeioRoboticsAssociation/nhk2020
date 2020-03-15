@@ -51,7 +51,7 @@ void get_angle()
   else if (angle_raw + PI * (float)(n_pi + 1) < bno_old)
     n_pi += 2;
   float bno_old_temp = angle_raw + PI * (float)n_pi;
-  if(abs(bno_old_temp-bno_old) < PI/9 || bno_old_temp != 0.0f)
+  if (abs(bno_old_temp - bno_old) < PI && bno_old_temp != 0.0f) // excludes data_error
     bno_old = bno_old_temp;
   bno_angle = bno_old - bno_offset;
 }

@@ -42,7 +42,7 @@ F2: create csv Blue -> Red
 26: kick1 -> kick3
 */
 
-int armmode = 0;   // 2:reset
+int flag = 0;   // 2:reset
 int mode = 0;	  // 0:start, 1:receive, 2~6:try1~5, 7~9:kick1~3
 int path_mode = 0; // 0:none, 1:path1, 2:path2, ...LINE_NUM
 int getmode = 0;   // 0:else, 1:start, 2:back, 3:try_point, 4~6:kick1~3, 7:break
@@ -70,7 +70,7 @@ void bnoCallback(const std_msgs::Float32MultiArray &msg)
 
 void buttonCallback(const std_msgs::Int32MultiArray &msg)
 {
-	armmode = msg.data[1];
+	flag = msg.data[0];
 	getmode = msg.data[3];
 }
 
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 		//ROS_INFO("[%.1f, %.1f]", pos[0],pos[1]);////////////
 
 		// reset
-		if (armmode == 2)
+		if (flag == 2)
 		{
 			mode = 0;
 			path_mode = 0;
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 			//try_mode = 1;
 		}
 
-		float tryflag = 0;
+		float tryflag = 0;	// 0:none, 2:try
 
 		// pure_pursuit
 		if (path_mode != 0)
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
 			tryflag = 0;
 		}
 
-		// publish
+		// publish	[vx,xy,delta_thta,tryflag]
 		std_msgs::Float32MultiArray floatarray;
 		floatarray.data.resize(4);
 		floatarray.data[0] = control[1][1];
