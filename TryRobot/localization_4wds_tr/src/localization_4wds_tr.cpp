@@ -75,6 +75,7 @@ int main(int argc, char **argv)
 
     ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("odom", 50);
     tf::TransformBroadcaster odom_broadcaster;
+    tf::TransformBroadcaster map_broadcaster;
     // ros::Publisher pub_RF = n.advertise<std_msgs::Float32MultiArray>("control_RF", 10);
     ros::Subscriber bno_sub = n.subscribe("bno_float", 100, bnoCallback);
     ros::Subscriber flag_sub = n.subscribe("arm_mbed", 100, flagCallback);
@@ -134,6 +135,24 @@ int main(int argc, char **argv)
         odom_trans.transform.rotation = odom_quat;
         // send transform
         odom_broadcaster.sendTransform(odom_trans);
+
+        ////modified 2020/03/15 by Fumiya Onishi
+        // tf trans map->odom
+        geometry_msgs::TransformStamped map_trans;
+        map_trans.header.stamp = current_time;
+        map_trans.header.frame_id = "map";
+        map_trans.child_frame_id = "odom";
+        // set position
+        map_trans.transform.translation.x = 0.0;
+        map_trans.transform.translation.y = 0.0;
+        map_trans.transform.translation.z = 0.0;
+        // calc yaw->quaternion
+        geometry_msgs::Quaternion map_quat = tf::createQuaternionMsgFromYaw(0.0);
+        map_trans.transform.rotation = map_quat;
+        
+        // send transform
+        map_broadcaster.sendTransform(map_trans);
+        ////End of modification
 
         // nav_msgs
         nav_msgs::Odometry odom;
