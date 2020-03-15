@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+ <!--RPlidar-->
+  <include file="$(find rplidar_filter)/launch/rplidar.launch" />
+ <!--map-->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find amcl_test)/map/nhk2020map.yaml" />
+ <!--amcl-->
+ <arg name="use_map_topic" default="true"/>
+ <node pkg="amcl" type="amcl" name="amcl">
+  <remap from="scan" to="scan_filtered" />
+  <param name="use_map_topic" value="$(arg use_map_topic)"/>
+ </node>
+ <!--TRrobot-->
+ <include file="$(find main_tr)/launch/main_tr.launch" />
+</launch>
