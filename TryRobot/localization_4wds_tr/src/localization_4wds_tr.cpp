@@ -105,11 +105,29 @@ int main(int argc, char **argv)
     float vx, vy, vtheta;                                // [m/s, rad/s]
     float oldpos[3] = {initialpos[0], initialpos[1], 0}; // [mm]
 
+    // tf trans map->odom
+    geometry_msgs::TransformStamped map_trans;
+    // time
+    ros::Time current_time = ros::Time::now();
+    map_trans.header.stamp = current_time;
+    map_trans.header.frame_id = "map";
+    map_trans.child_frame_id = "odom";
+    // set position
+    map_trans.transform.translation.x = 0.0;
+    map_trans.transform.translation.y = 0.0;
+    map_trans.transform.translation.z = 0.0;
+    // calc yaw->quaternion
+    geometry_msgs::Quaternion map_quat = tf::createQuaternionMsgFromYaw(0.0);
+    map_trans.transform.rotation = map_quat;
+        
+    // send transform
+    map_broadcaster.sendTransform(map_trans);
+
     ros::Rate loop_rate(looprate);
     while (ros::ok())
     {
         // time
-        ros::Time current_time = ros::Time::now();
+        current_time = ros::Time::now();
 
         if (flag == 2)
         {
@@ -129,30 +147,12 @@ int main(int argc, char **argv)
         odom_trans.header.frame_id = "odom";
         odom_trans.child_frame_id = "base_link";
         // set position
-        odom_trans.transform.translation.x = position[0];
-        odom_trans.transform.translation.y = position[1];
+        odom_trans.transform.translation.x = position[0] / 1000.0f; // [m]
+        odom_trans.transform.translation.y = position[1] / 1000.0f; // [m]
         odom_trans.transform.translation.z = 0.0;
         odom_trans.transform.rotation = odom_quat;
         // send transform
         odom_broadcaster.sendTransform(odom_trans);
-
-        ////modified 2020/03/15 by Fumiya Onishi
-        // tf trans map->odom
-        geometry_msgs::TransformStamped map_trans;
-        map_trans.header.stamp = current_time;
-        map_trans.header.frame_id = "map";
-        map_trans.child_frame_id = "odom";
-        // set position
-        map_trans.transform.translation.x = 0.0;
-        map_trans.transform.translation.y = 0.0;
-        map_trans.transform.translation.z = 0.0;
-        // calc yaw->quaternion
-        geometry_msgs::Quaternion map_quat = tf::createQuaternionMsgFromYaw(0.0);
-        map_trans.transform.rotation = map_quat;
-        
-        // send transform
-        map_broadcaster.sendTransform(map_trans);
-        ////End of modification
 
         // nav_msgs
         nav_msgs::Odometry odom;

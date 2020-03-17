@@ -115,8 +115,8 @@ int main(int argc, char **argv)
 			ROS_ERROR("%s", ex.what());
 			ros::Duration(1.0).sleep();
 		}
-		pos[0] = transform.getOrigin().x();
-		pos[1] = transform.getOrigin().y();
+		pos[0] = transform.getOrigin().x() * 1000.0f;
+		pos[1] = transform.getOrigin().y() * 1000.0f;
 		pos[2] = tf::getYaw(transform.getRotation());
 #endif
 		//ROS_INFO("[%.1f, %.1f]", pos[0],pos[1]);////////////
