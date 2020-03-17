@@ -12,25 +12,16 @@ Mbedserial Ms(pc);
 PwmOut pwm_pass(PA_8);  //
 DigitalOut phase_pass(PA_11);  //
 DigitalOut myled(LED1);
-InterruptIn button(USER_BUTTON);
+InterruptIn switch1(USER_BUTTON);
 
 float floatarray_plus = 0.5;
 // bool phase_pass = 1;
 
-void pass_motor(float floatarray_plus) {
-  if(floatarray_plus > 0) {
-    phase_pass = 1;
-    pwm_pass.write(floatarray_plus);
-  }
-  else {
-    phase_pass = 0;
-    pwm_pass.write(-floatarray_plus);
-  }
-}
+void pass_motor(float floatarray_plus);
 
 int main() {
   myled = 0;
-  while(!button);
+  while(switch1);
 
   myled = 1;
   wait(1);
@@ -43,5 +34,16 @@ int main() {
     if(Ms.getint[0] == 1) myled = 1;
     else myled = 0;
     wait_ms(20);
+  }
+}
+
+void pass_motor(float floatarray_plus) {
+  if(floatarray_plus > 0) {
+    phase_pass = 1;
+    pwm_pass.write(floatarray_plus);
+  }
+  else {
+    phase_pass = 0;
+    pwm_pass.write(-floatarray_plus);
   }
 }
