@@ -4,6 +4,14 @@
     <param name = "loop" value = "30"/>
     </node>
 
+    <node pkg="wheelcontrol_pr" name="wheelcontrol_pr" type="wheelcontrol_pr_node" output="screen">
+    <param name = "loop" value = "30"/>
+    </node>
+    
     <node pkg="joy" name="joy" type="joy_node" />
+    <node pkg="serial_test" name="serial_test" type="serial_test_node" output="screen">
+    <remap from="/Serial_sub_int" to = "control_int" />
+    <remap from="/Serial_sub_float" to = "/wheelcontrol_plus" />
+    </node>
 
 </launch>

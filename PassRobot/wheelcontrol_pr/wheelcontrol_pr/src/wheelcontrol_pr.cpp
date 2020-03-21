@@ -6,16 +6,10 @@
 
 float wheel_control[2] = {0};
 
-/*void msgCallback(const joystick_pr::control_float &msg) {
-    wheel_control[0] = msg[0];
-    wheel_control[1] = msg[1];
-}*/
-
 void msgCallback(const std_msgs::Float32MultiArray &msg) {
     wheel_control[0] = msg.data[0];
     wheel_control[1] = msg.data[1];
 }
-
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "wheelcontrol_pr_node");
