@@ -37,7 +37,7 @@ DigitalOut LED(LED3);
 DigitalOut OE(PF_1, 0); // レベルシフタを有効化
 
 //----------------------------------------Motor---------------------------------------------------
-#define STYLE_RF //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
+#define STYLE_LB //MotorA:Table MotorB:Wheel, else MotorA:Wheel MotorB:Table
 
 #ifdef STYLE_RF
 //MotorA
