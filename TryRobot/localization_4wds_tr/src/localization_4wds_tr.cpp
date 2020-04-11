@@ -138,10 +138,6 @@ int main(int argc, char **argv)
                           (wheelpos[0][1] + wheelpos[1][1] + wheelpos[2][1] + wheelpos[3][1]) / 4,
                           bno_theta);
 
-        //map->odom
-        map_trans.header.stamp = current_time;
-        map_broadcaster.sendTransform(map_trans);
-
         // calc yaw->quaternion
         geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(bno_theta);
 
