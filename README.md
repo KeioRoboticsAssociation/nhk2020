@@ -1,5 +1,5 @@
 # nhk2020
-nhk robocon 2020 programing  
+nhk robocon 2020 programming  
 source code of nhk2020 
 
 3 meta_packages
